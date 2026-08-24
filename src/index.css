@@ -1,0 +1,49 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.app {
+  display: flex;
+  min-height: 99vh;
+}
+
+.app aside {
+  width: 220px;
+  padding: 24px;
+  background: #f5f1e8;
+  border-right: 1px solid #ddd6c8;
+}
+
+.app main {
+  flex: 1;
+  padding: 32px;
+}
+
+.reader-content {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.app aside button {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px;
+  text-align: left;
+  background: white;
+  border: 1px solid #d8d0c2;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.app aside button:hover {
+  background: #ebe4d7;
+}
+
+.app aside button.selected {
+  background: #ddd1bd;
+  border-color: #9c896d;
+  font-weight: bold;
+}
