@@ -2,6 +2,8 @@
 
 ## macOS 0.1.0-beta.4 — 2026-10-04
 
+- Hide the dictionary lookup loading spinner; lookups continue without the circular indicator.
+
 - Highlight the dictionary's matched surface text in the original EPUB, across text spans and ruby, retaining the highlight when focus moves to the dictionary. Update it when switching matches and clear it on nonmatches or manual dictionary searches.
 - Use actual grapheme rectangles for pointer scanning in horizontal and vertical text. Both halves of a glyph resolve to that glyph; whitespace and ruby readings do not scan a neighboring word.
 - Replace the 180 ms Shift-hover debounce with one scan per animation frame, deduplicating scans within a character. Reuse the glossary document and replace its content instead of navigating on every lookup.

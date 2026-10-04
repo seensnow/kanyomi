@@ -183,7 +183,7 @@ struct DictionaryPanel: View {
     @State private var query = ""
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack { Image(systemName: "magnifyingglass").foregroundStyle(.secondary); TextField("Look up Japanese", text: $query).textFieldStyle(.plain).onSubmit { store.lookup(query) }; if store.searching { ProgressView().controlSize(.small) } }.padding(16)
+            HStack { Image(systemName: "magnifyingglass").foregroundStyle(.secondary); TextField("Look up Japanese", text: $query).textFieldStyle(.plain).onSubmit { store.lookup(query) } }.padding(16)
             Divider()
             if let word = store.activeResult {
                 VStack(alignment: .leading, spacing: 10) {
