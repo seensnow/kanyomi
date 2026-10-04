@@ -10,7 +10,7 @@ struct MainView: View {
     var body: some View {
         NavigationSplitView {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 10) { Image(systemName: "sparkle").font(.title).foregroundStyle(accent); VStack(alignment: .leading) { Text("SimpleReader").font(.headline); Text("macOS · beta 3").font(.caption).foregroundStyle(.secondary) } }.padding(20)
+                HStack(spacing: 10) { Image(systemName: "sparkle").font(.title).foregroundStyle(accent); VStack(alignment: .leading) { Text("SimpleReader").font(.headline); Text("macOS · beta 4").font(.caption).foregroundStyle(.secondary) } }.padding(20)
                 List(selection: $store.section) {
                     Label("Library", systemImage: "books.vertical").tag("Library")
                     Label("Dictionary", systemImage: "character.book.closed").tag("Dictionary")

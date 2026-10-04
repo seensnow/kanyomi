@@ -20,6 +20,7 @@ final class ReaderStore: ObservableObject {
     @Published var lookupText = ""
     @Published var sentence = ""
     @Published var selectionOffset = 0
+    @Published var lookupChapterKey: String?
     @Published var selectedResult = 0
     @Published var selectedGlossary = 0
     @Published var popupSelectionText = ""
@@ -41,7 +42,7 @@ final class ReaderStore: ObservableObject {
     let engine = DictionaryEngine()
     private var timer: Timer?
     private var saveWork: DispatchWorkItem?
-    private var lookupGeneration = 0
+    @Published private(set) var lookupGeneration = 0
     private var lastActivity = Date()
     private var lastTick = Date()
     private var player: AVPlayer?
@@ -182,9 +183,11 @@ final class ReaderStore: ObservableObject {
     func lookup(_ text: String, sentence: String = "", offset: Int = 0, fromBook: Bool = false) {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines); guard !text.isEmpty else { return }
         lookupGeneration += 1; let generation = lookupGeneration
+        lookupChapterKey = fromBook ? book.map { "\($0.id):\($0.chapter)" } : nil
         lookupText = text; self.sentence = sentence; selectionOffset = offset; selectedResult = 0; selectedGlossary = 0; popupSelectionText = ""; searching = true; kanjiText = ""
         if fromBook { record(lookups: 1); if playingAudio { toggleAudiobook() } }; activity()
         Task {
+            guard generation == lookupGeneration else { return }
             let found = await engine.search(text, scanLength: preferences.scanLength)
             let kanji = text.count == 1 ? await engine.kanji(text) : ""
             guard generation == lookupGeneration else { return }; results = found; kanjiText = kanji; searching = false

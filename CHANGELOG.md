@@ -1,5 +1,12 @@
 # Changelog
 
+## macOS 0.1.0-beta.4 — 2026-10-04
+
+- Highlight the dictionary's matched surface text in the original EPUB, across text spans and ruby, retaining the highlight when focus moves to the dictionary. Update it when switching matches and clear it on nonmatches or manual dictionary searches.
+- Use actual grapheme rectangles for pointer scanning in horizontal and vertical text. Both halves of a glyph resolve to that glyph; whitespace and ruby readings do not scan a neighboring word.
+- Replace the 180 ms Shift-hover debounce with one scan per animation frame, deduplicating scans within a character. Reuse the glossary document and replace its content instead of navigating on every lookup.
+- Validation: 19 native tests pass, including WebKit glyph hit tests, cross-ruby highlights, repeated hover and glossary document reuse. Local installed Jitendex queries measured 1–5 ms; full end-to-end parity with Hoshi is not claimed.
+
 ## macOS 0.1.0-beta.3 — 2026-10-04
 
 - Present dictionary entries as collapsible source cards with colored part-of-speech tags, example sentences, highlighted keywords and pitch graphs when pitch data is installed. Frequency dictionaries appear as compact badges.

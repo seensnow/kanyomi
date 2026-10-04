@@ -21,7 +21,7 @@ struct ReaderWebView: NSViewRepresentable {
         let path = root.appendingPathComponent(book.chapters[book.chapter].path)
         let key = "\(book.id):\(book.chapter)"
         if c.chapterKey != key {
-            c.chapterKey = key; c.ready = false; c.revision = store.navigationRevision
+            c.chapterKey = key; c.lookupMarkKey = ""; c.ready = false; c.revision = store.navigationRevision
             do {
                 let html = try String(contentsOf: path, encoding: .utf8)
                 let document = ReaderHTML.prepare(html)
@@ -36,12 +36,13 @@ struct ReaderWebView: NSViewRepresentable {
         if c.revision != store.navigationRevision { c.revision = store.navigationRevision; c.restore() }
         let markKey = store.state.passages.filter { $0.bookID == book.id && $0.chapter == book.chapter && $0.kind == "highlight" }.map { $0.id.uuidString + $0.text }.joined()
         if markKey != c.marksKey { c.marksKey = markKey; c.marks() }
+        c.lookupMark()
     }
     static func dismantleNSView(_ nsView: WKWebView, coordinator: Coordinator) { nsView.configuration.userContentController.removeScriptMessageHandler(forName: "reader"); nsView.stopLoading() }
     @MainActor final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         var store: ReaderStore
         weak var web: WKWebView?
-        var chapterKey = ""; var ready = false; var revision = -1; var preferencesKey = ""; var marksKey = ""
+        var chapterKey = ""; var ready = false; var revision = -1; var preferencesKey = ""; var marksKey = ""; var lookupMarkKey = ""
         init(_ store: ReaderStore) { self.store = store }
         func configure() {
             let p = store.preferences
@@ -52,10 +53,17 @@ struct ReaderWebView: NSViewRepresentable {
         }
         func restore() { web?.evaluateJavaScript("window.sr?.restore(\(store.jumpOffset ?? store.book?.offset ?? 0),\(jsonString(store.jumpFragment as Any? ?? NSNull())));") }
         func marks() { let passages = store.state.passages.filter { $0.bookID == store.book?.id && $0.chapter == store.book?.chapter && $0.kind == "highlight" }.map { ["offset": $0.offset, "text": $0.text] as [String: Any] }; web?.evaluateJavaScript("window.sr?.marks(\(jsonString(passages)))") }
+        func lookupMark() {
+            guard !store.searching else { return }
+            let length = store.lookupChapterKey == chapterKey ? (store.activeResult?.matched.utf16.count ?? 0) : 0
+            let key = "\(store.lookupGeneration):\(store.selectionOffset):\(length):\(store.lookupChapterKey ?? "")"
+            guard lookupMarkKey != key else { return }; lookupMarkKey = key
+            web?.evaluateJavaScript("window.sr?.lookupHighlight(\(store.selectionOffset),\(length))")
+        }
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             guard let data = message.body as? [String: Any], let type = data["type"] as? String else { return }
             switch type {
-            case "ready": ready = true; preferencesKey = ""; configure(); restore(); marks()
+            case "ready": ready = true; preferencesKey = ""; configure(); restore(); marks(); lookupMark()
             case "position": store.updatePosition(data["offset"] as? Int ?? 0, count: data["count"] as? Int ?? 0, reading: data["reading"] as? Bool ?? false)
             case "lookup": store.lookup(data["text"] as? String ?? "", sentence: data["sentence"] as? String ?? "", offset: data["offset"] as? Int ?? 0, fromBook: true)
             case "activity": store.activity()
@@ -78,18 +86,34 @@ struct GlossaryWebView: NSViewRepresentable {
     func makeCoordinator() -> MediaHandler { MediaHandler(engine, onSelection: onSelection) }
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration(); config.websiteDataStore = .nonPersistent(); config.userContentController.add(context.coordinator, name: "glossarySelection"); config.userContentController.addUserScript(WKUserScript(source: "document.addEventListener('mouseup',()=>window.webkit.messageHandlers.glossarySelection.postMessage(window.getSelection().toString()))", injectionTime: .atDocumentEnd, forMainFrameOnly: true)); config.setURLSchemeHandler(context.coordinator, forURLScheme: "dictmedia")
-        let web = WKWebView(frame: .zero, configuration: config); web.setValue(false, forKey: "drawsBackground"); return web
+        let web = WKWebView(frame: .zero, configuration: config); web.setValue(false, forKey: "drawsBackground"); web.navigationDelegate = context.coordinator; return web
     }
     func updateNSView(_ web: WKWebView, context: Context) {
         let key = html + css + theme; guard context.coordinator.lastHTML != key else { return }; context.coordinator.lastHTML = key
         context.coordinator.onSelection = onSelection
-        web.loadHTMLString(GlossaryDocument.prepare(html: html, css: css, theme: theme), baseURL: nil)
+        let styleKey = css + theme
+        context.coordinator.pendingBody = html
+        if context.coordinator.styleKey != styleKey {
+            context.coordinator.styleKey = styleKey; context.coordinator.documentReady = false
+            web.loadHTMLString(GlossaryDocument.prepare(html: html, css: css, theme: theme), baseURL: nil)
+        } else if context.coordinator.documentReady {
+            context.coordinator.updateBody(web)
+        }
     }
     static func dismantleNSView(_ web: WKWebView, coordinator: MediaHandler) { web.configuration.userContentController.removeScriptMessageHandler(forName: "glossarySelection"); web.stopLoading() }
 }
-final class MediaHandler: NSObject, WKURLSchemeHandler, WKScriptMessageHandler {
+final class MediaHandler: NSObject, WKURLSchemeHandler, WKScriptMessageHandler, WKNavigationDelegate {
     let engine: DictionaryEngine
     var lastHTML = ""
+    var styleKey = ""
+    var pendingBody = ""
+    var documentReady = false
+    func updateBody(_ web: WKWebView) {
+        web.evaluateJavaScript("document.body.innerHTML=\(jsonString(pendingBody));window.scrollTo(0,0)")
+    }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        documentReady = true; updateBody(webView)
+    }
     private var tasks: [ObjectIdentifier: Task<Void, Never>] = [:]
     var onSelection: (String) -> Void
     init(_ engine: DictionaryEngine, onSelection: @escaping (String) -> Void) { self.engine = engine; self.onSelection = onSelection }
