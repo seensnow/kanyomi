@@ -1,76 +1,37 @@
-# React + TypeScript + Vite
+# SimpleReader beta
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A local-first EPUB reader for the browser. Import books into this browser, or link an EPUB folder where the File System Access API is supported. Books and imported dictionaries are stored in IndexedDB; appearance and Anki settings are stored in localStorage.
 
-Currently, two official plugins are available:
+## Native macOS beta
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+A separate native SwiftUI/AppKit app now lives in [`macOS/`](macOS/README.md), with Hoshi-style offline Yomitan lookup, EPUB reading, AnkiConnect, vocabulary, statistics, audiobook/SRT support, and ッツ exchange/sync. See the [feature comparison and beta limits](macOS/FEATURES.md). Build with `macOS/scripts/package-app.sh release`, or open the generated `macOS/dist/SimpleReader.app`.
 
-## React Compiler
+Version history and validation are recorded in [CHANGELOG.md](CHANGELOG.md). GitHub Actions checks the browser build/tests and the native macOS tests/package.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Start
 
-## Expanding the ESLint configuration
+Requires Node.js 24 or newer.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```sh
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open the local URL printed by Vite. For a production build, run `npm run build` and serve `dist/` over HTTP or HTTPS. Run `npm run lint` and `npm test` to check the source.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Use
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Import an `.epub` file. On browsers with folder access, **Open Folder** links all EPUBs in that folder and its subfolders without copying the files. Reopen a folder to refresh its contents.
+2. Open a book and scroll to read. Your position is saved per book and restored next time. Use **Contents** to jump between chapters when the EPUB includes a table of contents.
+3. Select text to look it up. With a mouse, you can also hover over a word and press Shift. English lookup uses an online dictionary, with a few built-in demo entries. Japanese lookup uses imported Yomitan term-bank dictionaries offline, with an online fallback.
+4. To use Anki, run Anki with AnkiConnect installed, then configure the local endpoint, deck, note type, and field names in **Anki settings**. Test the connection before adding a card. No cloud API key is required; the AnkiConnect API key field is optional if your local setup uses one.
 
-```
-# SimpleReader
+**Remove book** deletes an imported EPUB from this browser. **Unlink folder** removes that folder's books from the library without deleting disk files. Both actions ask for confirmation. Browser storage and folder permissions are specific to each browser profile and origin; clearing site data removes imported books, dictionaries, and positions.
+
+## Beta limits
+
+- Folder linking depends on the browser's File System Access API. Importing an EPUB is the fallback where that API is unavailable.
+- Anki integration requires the desktop Anki app and AnkiConnect running on the same computer, with the reader's origin allowed by your local AnkiConnect configuration.
+- English online lookup and Japanese online fallback require a network connection. Imported Japanese dictionaries work offline.
+- Reading position uses the EPUB's CFI. If a book is replaced with a substantially different file, its old position may no longer resolve; the reader falls back to the beginning.
+- Data stays in one browser profile. There is no account or cross-device sync in this beta.

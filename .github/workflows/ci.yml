@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test native reader and WebKit illustrations
+        run: ./macOS/scripts/swift-build.sh test
+      - name: Package native beta
+        run: ./macOS/scripts/package-app.sh release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SimpleReader-macOS-beta
+          path: macOS/dist/SimpleReader-macOS-beta.zip
