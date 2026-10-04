@@ -1,0 +1,31 @@
+* { box-sizing: border-box; }
+body { margin: 0; padding: 12px; font: 15px/1.65 -apple-system, BlinkMacSystemFont, sans-serif; color: var(--text-color); background: var(--canvas); overflow-wrap: anywhere; }
+.dictionary-card, .pitch-card { margin: 0 0 14px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.dictionary-card > summary { padding: 10px 12px; background: var(--green-bg); color: var(--green); cursor: pointer; font-size: 12px; font-weight: 650; border-bottom: 1px solid var(--border); }
+.dictionary-number { margin-right: 8px; opacity: .7; font-variant-numeric: tabular-nums; }
+.definition-content { padding: 12px 14px; }
+.definition-content > :first-child { margin-top: 0; }
+.definition-content > :last-child { margin-bottom: 0; }
+ul, ol { padding-left: 1.45em; margin: .35em 0 .7em; }
+li { padding-left: .15em; margin: .2em 0; }
+p { margin: .5em 0; }
+ruby { ruby-position: over; }
+rt { font-size: .6em; color: var(--muted); }
+img { max-width: 100%; height: auto; }
+table { border-collapse: collapse; max-width: 100%; }
+td, th { padding: 5px; border: 1px solid var(--border); }
+[data-sc-content="sense-group"] + [data-sc-content="sense-group"] { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
+[data-sc-class="tag"], [data-sc-code], [data-sc-content="part-of-speech-info"] { display: inline-block; font-size: 11px; font-weight: 600; line-height: 1.4; padding: 3px 7px; margin: 0 5px 5px 0; border-radius: 5px; color: var(--amber) !important; background: var(--amber-bg) !important; vertical-align: middle; }
+[data-sc-content="example-sentence"] { border-left: 3px solid var(--blue) !important; background: var(--blue-bg) !important; border-radius: 8px; padding: 10px 12px; margin: 12px 0; }
+[data-sc-content="example-sentence-a"] { font-size: 17px; line-height: 2; color: var(--text-color); }
+[data-sc-content="example-sentence-b"] { font-size: 13px; color: var(--muted); padding-top: 5px; }
+[data-sc-content="example-keyword"] { color: var(--blue) !important; font-weight: 650; }
+[data-sc-content="attribution"] { font-size: 10px; color: var(--muted); margin-top: 10px; }
+.pitch-card { padding: 10px 12px; background: var(--purple-bg); color: var(--purple); }
+.pitch-card h2 { margin: 0 0 6px; font-size: 12px; }
+.pitch-item { display: inline-flex; flex-direction: column; margin: 0 10px 4px 0; max-width: 100%; }
+.pitch-label { font-size: 11px; }
+.pitch-item svg { max-width: 100%; }
+.pitch-item svg text { fill: var(--text-color); }
+.pitch-item svg polyline { stroke: var(--purple); }
+::selection { background: var(--blue-bg); color: var(--text-color); }

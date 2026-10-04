@@ -60,7 +60,7 @@ struct PreferencesView: View {
             }.padding(24).tabItem { Label("Audio", systemImage: "speaker.wave.2") }
             VStack(alignment: .leading, spacing: 20) {
                 Text("SimpleReader for macOS").font(.title)
-                Text("0.1.0 beta 2 · Native SwiftUI + AppKit + WebKit")
+                Text("0.1.0 beta 3 · Native SwiftUI + AppKit + WebKit")
                 Text("Inspired by Hoshi Reader. Offline dictionary lookup uses its hoshidicts engine, including Yomitan's Japanese deinflection rules. This is an independent GPL-3.0 application.").foregroundStyle(.secondary)
                 Link("Hoshi Reader", destination: URL(string: "https://github.com/Manhhao/Hoshi-Reader")!)
                 Link("Yomitan dictionaries", destination: URL(string: "https://github.com/yomidevs/jmdict-yomitan/releases")!)

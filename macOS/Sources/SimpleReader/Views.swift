@@ -10,7 +10,7 @@ struct MainView: View {
     var body: some View {
         NavigationSplitView {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 10) { Image(systemName: "sparkle").font(.title).foregroundStyle(accent); VStack(alignment: .leading) { Text("SimpleReader").font(.headline); Text("macOS · beta 2").font(.caption).foregroundStyle(.secondary) } }.padding(20)
+                HStack(spacing: 10) { Image(systemName: "sparkle").font(.title).foregroundStyle(accent); VStack(alignment: .leading) { Text("SimpleReader").font(.headline); Text("macOS · beta 3").font(.caption).foregroundStyle(.secondary) } }.padding(20)
                 List(selection: $store.section) {
                     Label("Library", systemImage: "books.vertical").tag("Library")
                     Label("Dictionary", systemImage: "character.book.closed").tag("Dictionary")
@@ -186,19 +186,36 @@ struct DictionaryPanel: View {
             HStack { Image(systemName: "magnifyingglass").foregroundStyle(.secondary); TextField("Look up Japanese", text: $query).textFieldStyle(.plain).onSubmit { store.lookup(query) }; if store.searching { ProgressView().controlSize(.small) } }.padding(16)
             Divider()
             if let word = store.activeResult {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack { Text(word.expression).font(.system(size: 30, design: .serif)).textSelection(.enabled); Spacer(); Button { store.playWord(word) } label: { Image(systemName: "speaker.wave.2") }.help("Play configured audio source"); Button { store.speak(word) } label: { Image(systemName: "waveform") }.help("macOS Japanese speech") }
-                    Text(word.reading).font(.title3).foregroundStyle(.secondary).textSelection(.enabled)
-                    if !word.reasons.isEmpty { Text(word.reasons.joined(separator: " → ")).font(.caption).foregroundStyle(accent) }
-                    if !word.frequencies.isEmpty { Text(word.frequencies.joined(separator: " · ")).font(.caption).foregroundStyle(.secondary).textSelection(.enabled) }
-                    if !word.pitches.isEmpty { Text(word.pitches.joined(separator: "\n")).font(.caption).foregroundStyle(.secondary).textSelection(.enabled) }
-                    if store.results.count > 1 {
-                        HStack { Button { store.selectedResult = max(0, store.selectedResult - 1) } label: { Image(systemName: "chevron.left") }.disabled(store.selectedResult == 0); Text("\(store.selectedResult + 1) of \(store.results.count) matches").font(.caption); Button { store.selectedResult = min(store.results.count - 1, store.selectedResult + 1) } label: { Image(systemName: "chevron.right") }.disabled(store.selectedResult + 1 == store.results.count) }
-                    }
-                }.padding(18).buttonStyle(.borderless)
+                VStack(alignment: .leading, spacing: 10) {
+                        HStack(alignment: .top, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(word.expression).font(.system(size: 32, weight: .semibold, design: .serif)).textSelection(.enabled)
+                                if word.reading != word.expression { Text(word.reading).font(.system(size: 17)).foregroundStyle(.secondary).textSelection(.enabled) }
+                            }
+                            Spacer(minLength: 0)
+                            VStack(alignment: .trailing, spacing: 8) {
+                                Button { store.playWord(word) } label: {
+                                    Label(store.pronunciationLoading ? "Loading…" : "Listen", systemImage: "speaker.wave.2.fill")
+                                }.buttonStyle(.borderedProminent).tint(.blue).disabled(store.pronunciationLoading).help("Play source audio; use Japanese speech if unavailable")
+                                Button { store.speak(word) } label: { Label("Japanese voice", systemImage: "waveform") }.font(.caption).buttonStyle(.borderless).help("Read aloud using the Mac's Japanese voice")
+                            }
+                        }
+                        if !store.pronunciationStatus.isEmpty { Text(store.pronunciationStatus).font(.caption2).foregroundStyle(.secondary) }
+                        if !word.reasons.isEmpty { Text(word.reasons.joined(separator: " → ")).font(.caption).foregroundStyle(.orange) }
+                        if !word.frequencies.isEmpty {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), alignment: .leading)], alignment: .leading, spacing: 6) {
+                                ForEach(Array(word.frequencies.enumerated()), id: \.offset) { _, value in
+                                    Text(value).font(.caption2).foregroundStyle(.purple).padding(.horizontal, 8).padding(.vertical, 4).background(.purple.opacity(0.12), in: RoundedRectangle(cornerRadius: 5)).textSelection(.enabled)
+                                }
+                            }
+                        }
+                        if store.results.count > 1 {
+                            HStack { Button { store.selectedResult = max(0, store.selectedResult - 1) } label: { Image(systemName: "chevron.left") }.disabled(store.selectedResult == 0); Text("\(store.selectedResult + 1) of \(store.results.count) matches").font(.caption); Button { store.selectedResult = min(store.results.count - 1, store.selectedResult + 1) } label: { Image(systemName: "chevron.right") }.disabled(store.selectedResult + 1 == store.results.count) }
+                        }
+                }.frame(maxWidth: .infinity, alignment: .leading).fixedSize(horizontal: false, vertical: true).padding(16).background(Color.blue.opacity(0.06))
                 Divider()
                 if word.glossaries.count > 1 { Picker("Mining definition", selection: $store.selectedGlossary) { ForEach(Array(word.glossaries.enumerated()), id: \.offset) { i, glossary in Text(glossary.dictionary).tag(i) } }.padding(.horizontal, 12).padding(.vertical, 8) }
-                GlossaryWebView(html: word.html, css: store.dictionaryCSS, engine: store.engine, theme: colorScheme == .dark ? "Night" : "White", onSelection: { store.popupSelectionText = $0 })
+                GlossaryWebView(html: GlossaryDocument.entries(word), css: store.dictionaryCSS, engine: store.engine, theme: colorScheme == .dark ? "Night" : "White", onSelection: { store.popupSelectionText = $0 })
                 if !store.sentence.isEmpty { Text(store.sentence).font(.caption).foregroundStyle(.secondary).lineLimit(3).textSelection(.enabled).padding(12) }
                 HStack { Button("Save word") { store.mine(word, toAnki: false) }; Button("Add to Anki") { store.mine(word, toAnki: true) }.buttonStyle(.borderedProminent) }.disabled(store.busy != nil).padding(12)
                 if store.book != nil { Button { store.addBookmark(kind: "highlight") } label: { Label("Highlight selection", systemImage: "highlighter") }.buttonStyle(.borderless).padding(.horizontal, 12).padding(.bottom, 12) }
@@ -211,7 +228,7 @@ struct DictionaryPanel: View {
                     if store.state.dictionaries.isEmpty { Button("Import dictionary…") { store.pickDictionary() } }
                 }.padding(28).frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-        }.background(Color(nsColor: .controlBackgroundColor)).onChange(of: store.selectedResult) { _, _ in store.selectedGlossary = 0; store.popupSelectionText = "" }
+        }.background(Color(nsColor: .controlBackgroundColor)).onChange(of: store.selectedResult) { _, _ in store.selectedGlossary = 0; store.popupSelectionText = ""; store.stopPronunciation() }.onChange(of: store.lookupText) { _, _ in store.stopPronunciation() }
     }
 }
 struct DictionaryPage: View {

@@ -46,7 +46,7 @@ actor DictionaryEngine {
             let t = r.term
             let glossaries = buffer(t.glossaries, t.glossaries_count).map { g -> Glossary in
                 let json = string(g.glossary); let obj = (try? JSONSerialization.jsonObject(with: Data(json.utf8), options: .fragmentsAllowed)) ?? json
-                let html = StructuredGlossary.render(obj, dictionary: string(g.dict_name))
+                let html = StructuredGlossary.glossary(obj, dictionary: string(g.dict_name))
                 return Glossary(dictionary: string(g.dict_name), json: json, html: html, plain: StructuredGlossary.plain(obj))
             }
             var frequencies: [String] = []; var values: [Int] = []
@@ -81,11 +81,17 @@ struct StructuredGlossary {
         if let d = value as? [String: Any] { return plain(d["content"] ?? d["text"] ?? d["description"] ?? "") }
         return ""
     }
+    static func glossary(_ value: Any, dictionary: String) -> String {
+        if let entries = value as? [Any], entries.count > 1, entries.allSatisfy({ $0 is String }) {
+            return "<ul class=\"glossary-list\">" + entries.map { "<li>" + render($0, dictionary: dictionary) + "</li>" }.joined() + "</ul>"
+        }
+        return render(value, dictionary: dictionary)
+    }
     static func render(_ value: Any, dictionary: String) -> String {
         if let s = value as? String { return escapeHTML(s).replacingOccurrences(of: "\n", with: "<br>") }
-        if let a = value as? [Any] { return "<div>" + a.map { render($0, dictionary: dictionary) }.joined(separator: "<br>") + "</div>" }
+        if let a = value as? [Any] { return a.map { render($0, dictionary: dictionary) }.joined() }
         guard let d = value as? [String: Any] else { return "" }
-        if d["type"] as? String == "structured-content" { return render(d["content"] ?? "", dictionary: dictionary) }
+        if d["type"] as? String == "structured-content" { return "<span class=\"structured-content\">" + render(d["content"] ?? "", dictionary: dictionary) + "</span>" }
         if d["type"] as? String == "image" || d["tag"] as? String == "img", let path = d["path"] as? String {
             var components = URLComponents(); components.scheme = "dictmedia"; components.host = "resource"; components.queryItems = [URLQueryItem(name: "dictionary", value: dictionary), URLQueryItem(name: "path", value: path)]
             return "<img src=\"\(escapeHTML(components.url?.absoluteString ?? ""))\" alt=\"\(escapeHTML(d["description"] as? String ?? ""))\" style=\"max-width:100%\">"
@@ -93,7 +99,7 @@ struct StructuredGlossary {
         let allowed: Set<String> = ["div", "span", "p", "ruby", "rt", "rp", "table", "thead", "tbody", "tfoot", "tr", "td", "th", "ol", "ul", "li", "br", "b", "i", "strong", "em", "small", "details", "summary"]
         let tag = d["tag"] as? String ?? "span"
         let safeTag = allowed.contains(tag) ? tag : "span"
-        var attrs = ""
+        var attrs = " class=\"gloss-sc-\(safeTag)\""
         if let style = d["style"] as? [String: Any] {
             let styles = style.compactMap { key, val -> String? in
                 guard key.range(of: "^[a-zA-Z]+$", options: .regularExpression) != nil else { return nil }
@@ -101,7 +107,13 @@ struct StructuredGlossary {
                 return "\(cssKey):\(escapeHTML(String(describing: val)))"
             }.joined(separator: ";"); attrs += " style=\"\(styles)\""
         }
-        if let data = d["data"] as? [String: Any] { for (key, val) in data where key.range(of: "^[a-zA-Z0-9_-]+$", options: .regularExpression) != nil { attrs += " data-\(key)=\"\(escapeHTML(String(describing: val)))\"" } }
+        if let data = d["data"] as? [String: Any] {
+            for (key, val) in data where key.range(of: "^[\\p{L}\\p{N}_-]+$", options: .regularExpression) != nil {
+                let name = key.replacingOccurrences(of: "([a-z])([A-Z])", with: "$1-$2", options: .regularExpression).lowercased()
+                let cjk = key.unicodeScalars.first.map { (0x3000...0x9fff).contains($0.value) || (0xf900...0xfaff).contains($0.value) } ?? false
+                attrs += " data-sc\(cjk ? "" : "-")\(name)=\"\(escapeHTML(String(describing: val)))\""
+            }
+        }
         for key in ["colSpan", "rowSpan", "title", "lang"] { if let val = d[key] { attrs += " \(key.lowercased())=\"\(escapeHTML(String(describing: val)))\"" } }
         return "<\(safeTag)\(attrs)>\(render(d["content"] ?? "", dictionary: dictionary))</\(safeTag)>"
     }

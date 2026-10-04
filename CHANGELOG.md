@@ -1,5 +1,13 @@
 # Changelog
 
+## macOS 0.1.0-beta.3 — 2026-10-04
+
+- Present dictionary entries as collapsible source cards with colored part-of-speech tags, example sentences, highlighted keywords and pitch graphs when pitch data is installed. Frequency dictionaries appear as compact badges.
+- Keep ruby and nested structured-content fragments inline instead of inserting breaks between every fragment. Match Yomitan/Hoshi `data-sc-*` selectors, including CJK data keys, so dictionary-provided styles work.
+- Add a labeled Listen button and Japanese voice action; validate source audio before playback and fall back to macOS Japanese speech when loading or decoding fails.
+- Support both dark and light dictionary themes and narrow reader panels.
+- Validation: 17 native tests pass, including narrow WebKit glossary rendering, ruby, tags, example sections and pitch graphs in both themes. Source audio remains dependent on the configured provider and network; speech requires an installed Japanese voice.
+
 ## macOS 0.1.0-beta.2 — 2026-10-04
 
 ### Added

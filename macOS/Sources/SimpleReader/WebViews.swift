@@ -83,8 +83,7 @@ struct GlossaryWebView: NSViewRepresentable {
     func updateNSView(_ web: WKWebView, context: Context) {
         let key = html + css + theme; guard context.coordinator.lastHTML != key else { return }; context.coordinator.lastHTML = key
         context.coordinator.onSelection = onSelection
-        let foreground = theme == "Night" ? "#dedbd4" : "#302c28"
-        web.loadHTMLString("<html><head><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src dictmedia: data:;\"><meta charset=\"utf-8\"><style>body{font:15px -apple-system;color:\(foreground);line-height:1.7;margin:12px 18px}small{color:#8d7868;font-size:11px;display:block;margin-bottom:6px}section{margin-bottom:20px}img{max-width:100%}table{border-collapse:collapse}td,th{padding:4px;border:1px solid #8884}\(css)</style></head><body>\(html)</body></html>", baseURL: nil)
+        web.loadHTMLString(GlossaryDocument.prepare(html: html, css: css, theme: theme), baseURL: nil)
     }
     static func dismantleNSView(_ web: WKWebView, coordinator: MediaHandler) { web.configuration.userContentController.removeScriptMessageHandler(forName: "glossarySelection"); web.stopLoading() }
 }

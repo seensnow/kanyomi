@@ -45,7 +45,10 @@ final class ReaderStore: ObservableObject {
     private var lastActivity = Date()
     private var lastTick = Date()
     private var player: AVPlayer?
-    private var wordPlayer: AVPlayer?
+    private var wordPlayer: AVAudioPlayer?
+    private var pronunciationTask: Task<Void, Never>?
+    @Published var pronunciationLoading = false
+    @Published var pronunciationStatus = ""
     private let speech = AVSpeechSynthesizer()
     var book: Book? { state.books.first { $0.id == selectedBookID } }
     var activeResult: WordResult? { results.indices.contains(selectedResult) ? results[selectedResult] : nil }
@@ -205,13 +208,36 @@ final class ReaderStore: ObservableObject {
             if player.currentItem?.duration.seconds.isFinite == true, time >= player.currentItem!.duration.seconds { playingAudio = false }
         }
     }
-    func speak(_ result: WordResult) { speech.stopSpeaking(at: .immediate); let utterance = AVSpeechUtterance(string: result.reading.isEmpty ? result.expression : result.reading); utterance.voice = AVSpeechSynthesisVoice(language: "ja-JP"); speech.speak(utterance) }
+    func stopPronunciation() {
+        pronunciationTask?.cancel(); pronunciationLoading = false; wordPlayer?.stop()
+        speech.stopSpeaking(at: .immediate); pronunciationStatus = ""
+    }
+    func speak(_ result: WordResult) {
+        pronunciationTask?.cancel(); pronunciationLoading = false; wordPlayer?.stop()
+        speech.stopSpeaking(at: .immediate)
+        let utterance = AVSpeechUtterance(string: result.reading.isEmpty ? result.expression : result.reading)
+        guard let voice = AVSpeechSynthesisVoice(language: "ja-JP") else { pronunciationStatus = "Install a Japanese voice in macOS settings"; return }
+        utterance.voice = voice; utterance.rate = 0.45; speech.speak(utterance)
+        pronunciationStatus = "Japanese speech"
+    }
     func playWord(_ result: WordResult) {
-        run("Loading pronunciation…") { [self] in
-            let url = try AudioSource.resolve(preferences.audioURL, result: result)
-            let audio = try await AudioSource.download(url, type: preferences.audioSourceType)
-            let file = root.appendingPathComponent("pronunciation.\(audio.ext)")
-            try audio.data.write(to: file, options: .atomic); wordPlayer = AVPlayer(url: file); wordPlayer?.play()
+        pronunciationTask?.cancel(); wordPlayer?.stop(); speech.stopSpeaking(at: .immediate)
+        pronunciationLoading = true; pronunciationStatus = "Loading audio…"
+        let settings = preferences
+        pronunciationTask = Task { [weak self] in
+            do {
+                let url = try AudioSource.resolve(settings.audioURL, result: result)
+                let audio = try await AudioSource.download(url, type: settings.audioSourceType)
+                try Task.checkCancellation()
+                let player = try AVAudioPlayer(data: audio.data)
+                guard player.prepareToPlay(), player.play() else { throw ReaderError.message("Audio could not be played") }
+                self?.wordPlayer = player; self?.pronunciationStatus = "Source audio"
+            } catch {
+                guard !Task.isCancelled else { return }
+                self?.speak(result)
+                if self?.pronunciationStatus == "Japanese speech" { self?.pronunciationStatus = "Audio unavailable · Japanese speech" }
+            }
+            self?.pronunciationLoading = false
         }
     }
     func connectAnki() {

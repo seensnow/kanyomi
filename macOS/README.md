@@ -1,11 +1,13 @@
-# SimpleReader for macOS — 0.1.0 beta 2
+# SimpleReader for macOS — 0.1.0 beta 3
 
 An independent native Japanese EPUB reader inspired by Hoshi Reader. SwiftUI and AppKit provide the desktop UI; Apple's WebKit renders EPUB chapters, including vertical writing and ruby. Offline Yomitan lookup uses the GPL Hoshi dictionary engine. The existing React web project is left intact.
 
 ## Beta fixes
 
+- Beta 3 brings colored dictionary source cards, part-of-speech tags, inline ruby examples and pitch graphs when available. Listen plays the configured audio source with Japanese speech fallback; Japanese voice reads aloud directly.
+
 - Dictionary management stays within the window and scrolls when needed; headers, download links and import controls stay visible.
-- Packaging retains only `dist/SimpleReader.app`, with a visible beta 2 version label. Distribution staging uses a temporary folder that is removed after creating the ZIP.
+- Packaging retains only `dist/SimpleReader.app`, with a visible beta 3 version label. Distribution staging uses a temporary folder that is removed after creating the ZIP.
 
 - Library covers use a portrait ratio and fill the card without padding or leftover background.
 - Self-closing EPUB XHTML scripts are stripped before HTML rendering so they cannot swallow illustration pages. Image-only SVG/image pages fit the viewport in either writing mode.
