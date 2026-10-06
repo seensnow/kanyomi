@@ -3,9 +3,9 @@
 ## macOS 0.1.0-beta.5 — 2026-10-06
 
 - Add a persistent Follow system / English / 简体中文 interface selector in Settings → Appearance, with Chinese labels across library, reader, dictionary, settings, vocabulary, statistics and sync screens. Source book/dictionary content and provider errors retain their original language; some technical status messages remain English.
-- Add the Jitendex Japanese–Simplified Chinese community dictionary release page in Dictionary and Settings, labeled as an unofficial machine translation. Download its dictionary ZIP and import without extracting; full downloaded dictionary import was not tested.
+- Remove the machine-translated Japanese–Chinese dictionary download recommendation and its unused Chinese label. Document the publisher-backed Shogakukan / Monokakido option and that no publisher-authorized Yomitan ZIP has been verified. Removal validation: release packaging rebuild and signature verification; dictionary importer and lookup behavior are unchanged.
 - Replace left/right match paging with one continuous vertical WebKit document containing every lookup match. “Use for mining” and selecting definition text choose the corresponding result for saving, pronunciation, original-book highlighting and Anki; selection preserves scroll position and expanded cards.
-- Validation: 21 native tests pass, including eight-match narrow-viewport vertical scrolling, retained scroll/card state on mining selection, language fallback, and existing EPUB/highlighting/glossary tests. Apple Silicon release app builds and is ad-hoc signed; not notarized. Packaged beta 5 was checked with the existing Jitendex が lookup: eight result sections scroll through one document, and Chinese interface/download labels are visible after relaunch.
+- Validation: 21 native tests pass, including eight-match narrow-viewport vertical scrolling, retained scroll/card state on mining selection, language fallback, and existing EPUB/highlighting/glossary tests. Apple Silicon release app builds and is ad-hoc signed; not notarized. Packaged beta 5 was checked with the existing Jitendex が lookup: eight result sections scroll through one document, and Chinese interface labels are visible after relaunch.
 
 ## macOS 0.1.0-beta.4 — 2026-10-04
 

@@ -275,7 +275,6 @@ struct DictionaryDownloads: View {
         DisclosureGroup(L("Recommended dictionaries · Download"), isExpanded: $expanded) {
             VStack(alignment: .leading, spacing: 10) {
                 download("Jitendex", detail: "Japanese–English definitions and examples · Start here", url: "https://github.com/stephenmk/stephenmk.github.io/releases/latest/download/jitendex-yomitan.zip")
-                download("Jitendex 日中辞典", detail: "Japanese–Simplified Chinese · Community machine translation; download the dictionary ZIP from Releases", url: "https://github.com/greyindex/jitendex-yomitan-zh/releases/latest")
                 download("JMnedict", detail: "Japanese names: people and places", url: "https://github.com/yomidevs/jmdict-yomitan/releases/latest/download/JMnedict.zip")
                 download("KANJIDIC", detail: "Kanji meanings and readings · English", url: "https://github.com/yomidevs/jmdict-yomitan/releases/latest/download/KANJIDIC_english.zip")
                 Text(L("Download a ZIP, then choose Import dictionary ZIP… without unzipping it.")).font(.caption).foregroundStyle(.secondary)

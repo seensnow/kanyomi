@@ -6,7 +6,6 @@ An independent native Japanese EPUB reader inspired by Hoshi Reader. SwiftUI and
 
 - Beta 5 adds Settings → Appearance → Interface language (Follow system, English, 简体中文). The choice persists across launches; imported book and dictionary text keep their source language. Provider errors and some technical status messages retain their original language.
 - All lookup matches now appear in one vertical scrolling document. Choose “Use for mining” on a result, or select definition text within it, to target that word for audio, saving and Anki. Selecting a result keeps the scroll position and expanded cards.
-- Dictionary and Settings include the [Jitendex Japanese–Simplified Chinese community release page](https://github.com/greyindex/jitendex-yomitan-zh/releases/latest). Choose the dictionary ZIP, rather than the review-record archive, and import it without unzipping. It is an unofficial machine translation.
 
 - Beta 3 brings colored dictionary source cards, part-of-speech tags, inline ruby examples and pitch graphs when available. Listen plays the configured audio source with Japanese speech fallback; Japanese voice reads aloud directly.
 
@@ -16,6 +15,10 @@ An independent native Japanese EPUB reader inspired by Hoshi Reader. SwiftUI and
 - Library covers use a portrait ratio and fill the card without padding or leftover background.
 - Self-closing EPUB XHTML scripts are stripped before HTML rendering so they cannot swallow illustration pages. Image-only SVG/image pages fit the viewport in either writing mode.
 - Dictionary and Settings include ZIP download links for Jitendex (definitions), JMnedict (names), and KANJIDIC (kanji), plus their source pages. Download a ZIP and import it without unzipping.
+
+## Japanese–Chinese dictionaries
+
+The machine-translated Jitendex Chinese download recommendation has been removed. The [publisher-backed Shogakukan Japanese–Chinese dictionary, third edition](https://www.monokakido.jp/ja/dictionaries/cj3/index.html) is available as paid content in [Dictionaries by Monokakido](https://www.monokakido.jp/ja/dictionaries/app/), including on macOS. Its official distribution uses that app; no publisher-authorized Yomitan ZIP compatible with SimpleReader has been verified. Buying its app content does not make it importable here.
 
 ## Open the beta
 

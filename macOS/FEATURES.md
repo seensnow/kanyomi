@@ -16,8 +16,8 @@ Reference: Hoshi Reader README plus reader, settings, sync and Sasayaki source i
 | Anki mining | Desktop AnkiConnect, deck/model fields, duplicate handling, local vocab TSV | Mock API protocol tested; real user's Anki collection not modified during testing |
 | Hoshi/Lapis markers | All core markers listed in Settings, glossary categories, pitch SVGs, media | Marker replacement tested; selected glossary picker and kana-boundary furigana segmentation; unusual readings may use a whole-expression fallback |
 | Reading statistics | Daily time/characters/lookups/cards, goal, charts, per book | Foreground + 90-second inactivity pause; forward scroll heuristic, not exact pages read |
+| Japanese–Chinese dictionaries | Import compatible Yomitan ZIPs; no machine-translated download recommendation | Publisher-backed Shogakukan content is available through Monokakido; a publisher-authorized importable ZIP has not been verified |
 | Interface language | Follow system / English / 简体中文 in Settings → Appearance; persists across launches | Book and dictionary content retain their language; provider errors and some technical status messages remain untranslated |
-| Chinese dictionary download | Jitendex Japanese–Simplified Chinese community release page | Unofficial machine translation; import the dictionary ZIP, not the review archive; full downloaded dictionary import not exercised in this change |
 | Themes/fonts/CSS | Paper/white/night/custom colors, system/imported fonts, custom CSS | Per-application reading appearance |
 | ッツ sync | Bookdata ZIP, progress JSON; Google Drive push/pull, daily stats merge, cover, audio position | Local bookdata round trip tested; real OAuth/Drive integration unverified without credentials; no automatic background sync |
 | Backup/restore | Full local ZIP plus recovery copy, validated restored paths | ZIP path checks tested; Keychain credentials separate |

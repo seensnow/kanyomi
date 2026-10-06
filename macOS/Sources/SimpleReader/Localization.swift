@@ -105,7 +105,6 @@ enum AppLanguage {
         "Japanese names: people and places": "日语人名与地名",
         "Japanese voice": "日语语音",
         "Japanese–English definitions and examples · Start here": "日英释义和例句 · 推荐入门",
-        "Japanese–Simplified Chinese · Community machine translation; download the dictionary ZIP from Releases": "日语—简体中文 · 社区机器翻译版；请在发布页下载词典 ZIP",
         "Jitendex website": "Jitendex 网站",
         "Kanji meanings and readings · English": "汉字释义和读音 · 英文",
         "Keep your place.": "保存你的阅读进度。",
