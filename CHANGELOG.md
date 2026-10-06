@@ -1,5 +1,11 @@
 # Changelog
 
+## macOS 0.1.0-beta.6 — 2026-10-06
+
+- Adopt compact Hoshi-inspired dictionary typography: inline wrapping synonyms separated by `|`, smaller match/mining controls, quieter source headings and compact examples. Keep continuous vertical scrolling and ruby.
+- Group each dictionary’s entries under one collapsible source heading with numbered rows. Display imported definition/term tags, including JMnedict name categories; preserve original glossary indices for mining.
+- Validation: 22 native tests pass, including source grouping, tag escaping, compact synonym layout at 320 px in light/dark themes, and existing scroll/selection regression coverage. Release packaging and signature verification pass; packaged beta 6 was checked with installed Jitendex/JMnedict 学 entries, confirming inline synonyms and one source heading for all six name rows. Apple Silicon app remains ad-hoc signed, not notarized.
+
 ## macOS 0.1.0-beta.5 — 2026-10-06
 
 - Add a persistent Follow system / English / 简体中文 interface selector in Settings → Appearance, with Chinese labels across library, reader, dictionary, settings, vocabulary, statistics and sync screens. Source book/dictionary content and provider errors retain their original language; some technical status messages remain English.

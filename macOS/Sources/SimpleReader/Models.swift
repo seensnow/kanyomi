@@ -71,6 +71,8 @@ struct Glossary: Identifiable {
     var json: String
     var html: String
     var plain: String
+    var definitionTags: [String] = []
+    var termTags: [String] = []
 }
 struct WordResult: Identifiable {
     var id: String { expression + "|" + reading }

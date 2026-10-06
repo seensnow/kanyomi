@@ -3,9 +3,9 @@ import Foundation
 struct GlossaryDocument {
     static func matches(_ words: [WordResult]) -> String {
         words.enumerated().map { index, word in
-            let reading = word.reading == word.expression ? "" : " · " + escapeHTML(word.reading)
+            let reading = word.reading == word.expression ? "" : "<span class=\"match-reading\">" + escapeHTML(word.reading) + "</span>"
             return """
-            <section class="match-card" data-match="\(index)"><header><h2>\(index + 1). \(escapeHTML(word.expression))\(reading)</h2><button type="button" data-select-match="\(index)" aria-pressed="false">\(escapeHTML(L("Use for mining")))</button></header>\(entries(word))</section>
+            <section class="match-card" data-match="\(index)"><header><h2><span class="match-number">\(index + 1).</span> \(escapeHTML(word.expression))\(reading)</h2><button type="button" data-select-match="\(index)" aria-pressed="false">\(escapeHTML(L("Use for mining")))</button></header>\(entries(word))</section>
             """
         }.joined()
     }
@@ -19,8 +19,19 @@ struct GlossaryDocument {
             }.joined()
             output += "<section class=\"pitch-card\"><h2>\(escapeHTML(L("Pitch accent")))</h2>\(graphs)</section>"
         }
-        for (index, glossary) in word.glossaries.enumerated() {
-            output += "<details class=\"dictionary-card\" data-dictionary=\"\(escapeHTML(glossary.dictionary))\" open><summary><span class=\"dictionary-number\">\(index + 1)</span>\(escapeHTML(glossary.dictionary))</summary><div class=\"definition-content yomitan-glossary\">\(glossary.html)</div></details>"
+        // Preserve dictionary priority and each original glossary index for mining.
+        var sources: [String] = []
+        for glossary in word.glossaries where !sources.contains(glossary.dictionary) { sources.append(glossary.dictionary) }
+        for source in sources {
+            let glossaries = word.glossaries.enumerated().filter { $0.element.dictionary == source }
+            let rows = glossaries.map { index, glossary in
+                var tags: [String] = []
+                for tag in glossary.definitionTags + glossary.termTags where !tags.contains(tag) { tags.append(tag) }
+                let labels = tags.map { "<span class=\"glossary-tag\">\(escapeHTML($0))</span>" }.joined()
+                return "<li data-glossary-index=\"\(index)\"><div class=\"glossary-tags\">\(labels)</div><div class=\"yomitan-glossary\">\(glossary.html)</div></li>"
+            }.joined()
+            let single = glossaries.count == 1 ? " single-definition" : ""
+            output += "<details class=\"dictionary-card\" data-dictionary=\"\(escapeHTML(source))\" open><summary>\(escapeHTML(source))</summary><div class=\"definition-content\"><ol class=\"definition-list\(single)\">\(rows)</ol></div></details>"
         }
         return output
     }

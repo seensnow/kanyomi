@@ -1,8 +1,10 @@
-# SimpleReader for macOS — 0.1.0 beta 5
+# SimpleReader for macOS — 0.1.0 beta 6
 
 An independent native Japanese EPUB reader inspired by Hoshi Reader. SwiftUI and AppKit provide the desktop UI; Apple's WebKit renders EPUB chapters, including vertical writing and ruby. Offline Yomitan lookup uses the GPL Hoshi dictionary engine. The existing React web project is left intact.
 
 ## Beta fixes
+
+- Beta 6 uses compact Hoshi-inspired glossary layouts: one collapsible heading per dictionary, numbered entries, synonyms separated by `|`, dictionary-provided name/word tags, smaller mining controls and less prominent examples. All matches still scroll continuously; original glossary indices remain available for mining.
 
 - Beta 5 adds Settings → Appearance → Interface language (Follow system, English, 简体中文). The choice persists across launches; imported book and dictionary text keep their source language. Provider errors and some technical status messages retain their original language.
 - All lookup matches now appear in one vertical scrolling document. Choose “Use for mining” on a result, or select definition text within it, to target that word for audio, saving and Anki. Selecting a result keeps the scroll position and expanded cards.
@@ -10,7 +12,7 @@ An independent native Japanese EPUB reader inspired by Hoshi Reader. SwiftUI and
 - Beta 3 brings colored dictionary source cards, part-of-speech tags, inline ruby examples and pitch graphs when available. Listen plays the configured audio source with Japanese speech fallback; Japanese voice reads aloud directly.
 
 - Dictionary management stays within the window and scrolls when needed; headers, download links and import controls stay visible.
-- Packaging retains only `dist/SimpleReader.app`, with a visible beta 5 version label. Distribution staging uses a temporary folder that is removed after creating the ZIP.
+- Packaging retains only `dist/SimpleReader.app`, with a visible beta 6 version label. Distribution staging uses a temporary folder that is removed after creating the ZIP.
 
 - Library covers use a portrait ratio and fill the card without padding or leftover background.
 - Self-closing EPUB XHTML scripts are stripped before HTML rendering so they cannot swallow illustration pages. Image-only SVG/image pages fit the viewport in either writing mode.

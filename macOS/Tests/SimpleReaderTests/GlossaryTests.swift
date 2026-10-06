@@ -29,8 +29,22 @@ struct GlossaryTests {
         #expect(attributes.contains("data-sc見出=\"雨\""))
         #expect(!attributes.contains("onclick"))
     }
+    @Test func repeatedSourcesGroupWithoutChangingMiningIndices() {
+        let word = WordResult(expression: "学", reading: "がく", matched: "学", reasons: [], glossaries: [
+            Glossary(dictionary: "Names", json: "1", html: "あきら | ゆたか", plain: "names", definitionTags: ["unclass"]),
+            Glossary(dictionary: "Other", json: "2", html: "study", plain: "study"),
+            Glossary(dictionary: "Names", json: "3", html: "がく", plain: "がく", definitionTags: ["place", "<unsafe>"])
+        ], frequencies: [], frequencyValues: [], pitches: [], pitchPositions: [])
+        let html = GlossaryDocument.entries(word)
+        #expect(html.components(separatedBy: "class=\"dictionary-card\"").count - 1 == 2)
+        #expect(html.contains("<summary>Names</summary>"))
+        #expect(html.contains("data-glossary-index=\"2\""))
+        #expect(html.contains("class=\"glossary-tag\">place</span>"))
+        #expect(html.contains("&lt;unsafe&gt;"))
+        #expect(html.range(of: "<summary>Names")!.lowerBound < html.range(of: "<summary>Other")!.lowerBound)
+    }
     @Test @MainActor func narrowGlossaryRendersRubyTagsExamplesAndPitchInBothThemes() async throws {
-        let word = WordResult(expression: "恋", reading: "こい", matched: "恋", reasons: [], glossaries: [Glossary(dictionary: "Fixture", json: "[]", html: StructuredGlossary.glossary([Self.content], dictionary: "Fixture"), plain: "love")], frequencies: [], frequencyValues: [], pitches: ["1"], pitchPositions: [1])
+        let word = WordResult(expression: "恋", reading: "こい", matched: "恋", reasons: [], glossaries: [Glossary(dictionary: "Fixture", json: "[]", html: StructuredGlossary.glossary([Self.content], dictionary: "Fixture"), plain: "love"), Glossary(dictionary: "Fixture", json: "synonyms", html: StructuredGlossary.glossary(["learning", "scholarship", "study", "erudition", "knowledge", "education"], dictionary: "Fixture"), plain: "study", definitionTags: ["noun"])], frequencies: [], frequencyValues: [], pitches: ["1"], pitchPositions: [1])
         for theme in ["Night", "White"] {
             let configuration = WKWebViewConfiguration(); configuration.websiteDataStore = .nonPersistent()
             let ready = GlossaryReady()
@@ -54,6 +68,13 @@ struct GlossaryTests {
                 #expect(result[4] as? String != "rgba(0, 0, 0, 0)")
                 #expect((result[5] as! Int) == 1)
                 #expect(result[6] as? String == "ruby")
+                let layout = try await web.evaluateJavaScript("""
+                (()=>{const items=[...document.querySelectorAll('.glossary-list > li')];return [document.querySelectorAll('.dictionary-card').length,items[0].getBoundingClientRect().top===items[1].getBoundingClientRect().top,document.querySelector('.glossary-list').getBoundingClientRect().height<90,document.querySelector('.glossary-tag').textContent]})()
+                """) as! [Any]
+                #expect(layout[0] as? Int == 1)
+                #expect(layout[1] as? Bool == true)
+                #expect(layout[2] as? Bool == true)
+                #expect(layout[3] as? String == "noun")
             }
             configuration.userContentController.removeScriptMessageHandler(forName: "glossaryReady"); web.stopLoading()
         }

@@ -47,7 +47,7 @@ actor DictionaryEngine {
             let glossaries = buffer(t.glossaries, t.glossaries_count).map { g -> Glossary in
                 let json = string(g.glossary); let obj = (try? JSONSerialization.jsonObject(with: Data(json.utf8), options: .fragmentsAllowed)) ?? json
                 let html = StructuredGlossary.glossary(obj, dictionary: string(g.dict_name))
-                return Glossary(dictionary: string(g.dict_name), json: json, html: html, plain: StructuredGlossary.plain(obj))
+                return Glossary(dictionary: string(g.dict_name), json: json, html: html, plain: StructuredGlossary.plain(obj), definitionTags: string(g.definition_tags).split(whereSeparator: { $0.isWhitespace }).map(String.init), termTags: string(g.term_tags).split(whereSeparator: { $0.isWhitespace }).map(String.init))
             }
             var frequencies: [String] = []; var values: [Int] = []
             for f in buffer(t.frequencies, t.frequencies_count) {

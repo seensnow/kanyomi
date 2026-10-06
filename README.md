@@ -4,7 +4,7 @@ A local-first EPUB reader for the browser. Import books into this browser, or li
 
 ## Native macOS beta
 
-The native macOS 0.1.0-beta.5 adds an English / 简体中文 / system interface selector in Settings → Appearance and continuous vertical scrolling through all dictionary matches with an explicit mining selection. Dictionary and Settings also link to the official Shogakukan Japanese–Chinese product and Monokakido app download pages; that paid app content is separate from Yomitan ZIP import.
+The native macOS 0.1.0-beta.6 adds compact Hoshi-inspired dictionary layouts with grouped sources, inline synonyms and name-type tags, alongside an English / 简体中文 / system interface selector in Settings → Appearance and continuous vertical scrolling through all dictionary matches with an explicit mining selection. Dictionary and Settings also link to the official Shogakukan Japanese–Chinese product and Monokakido app download pages; that paid app content is separate from Yomitan ZIP import.
 
 A separate native SwiftUI/AppKit app now lives in [`macOS/`](macOS/README.md), with Hoshi-style offline Yomitan lookup, exact character scanning and persistent matched-text highlighting, EPUB reading, AnkiConnect, vocabulary, statistics, audiobook/SRT support, and ッツ exchange/sync. See the [feature comparison and beta limits](macOS/FEATURES.md). Build with `macOS/scripts/package-app.sh release`, or open the generated `macOS/dist/SimpleReader.app`.
 

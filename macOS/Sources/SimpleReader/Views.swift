@@ -12,7 +12,7 @@ struct MainView: View {
         let _ = interfaceLocale
         NavigationSplitView {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 10) { Image(systemName: "sparkle").font(.title).foregroundStyle(accent); VStack(alignment: .leading) { Text("SimpleReader").font(.headline); Text("macOS · beta 5").font(.caption).foregroundStyle(.secondary) } }.padding(20)
+                HStack(spacing: 10) { Image(systemName: "sparkle").font(.title).foregroundStyle(accent); VStack(alignment: .leading) { Text("SimpleReader").font(.headline); Text("macOS · beta 6").font(.caption).foregroundStyle(.secondary) } }.padding(20)
                 List(selection: $store.section) {
                     Label(L("Library"), systemImage: "books.vertical").tag("Library")
                     Label(L("Dictionary"), systemImage: "character.book.closed").tag("Dictionary")
@@ -199,8 +199,8 @@ struct DictionaryPanel: View {
                 VStack(alignment: .leading, spacing: 10) {
                         HStack(alignment: .top, spacing: 12) {
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(word.expression).font(.system(size: 32, weight: .semibold, design: .serif)).textSelection(.enabled)
-                                if word.reading != word.expression { Text(word.reading).font(.system(size: 17)).foregroundStyle(.secondary).textSelection(.enabled) }
+                                Text(word.expression).font(.system(size: 26, weight: .semibold, design: .serif)).textSelection(.enabled)
+                                if word.reading != word.expression { Text(word.reading).font(.system(size: 13)).foregroundStyle(.secondary).textSelection(.enabled) }
                             }
                             Spacer(minLength: 0)
                             VStack(alignment: .trailing, spacing: 8) {
@@ -222,7 +222,7 @@ struct DictionaryPanel: View {
                         if store.results.count > 1 {
                             Text(L("%d matches · Scroll for all definitions", store.results.count)).font(.caption)
                         }
-                }.frame(maxWidth: .infinity, alignment: .leading).fixedSize(horizontal: false, vertical: true).padding(16).background(Color.blue.opacity(0.06))
+                }.frame(maxWidth: .infinity, alignment: .leading).fixedSize(horizontal: false, vertical: true).padding(12).background(Color.blue.opacity(0.04))
                 Divider()
                 if word.glossaries.count > 1 { Picker(L("Mining definition"), selection: $store.selectedGlossary) { ForEach(Array(word.glossaries.enumerated()), id: \.offset) { i, glossary in Text(glossary.dictionary).tag(i) } }.padding(.horizontal, 12).padding(.vertical, 8) }
                 GlossaryWebView(html: GlossaryDocument.matches(store.results), css: store.dictionaryCSS, engine: store.engine, theme: colorScheme == .dark ? "Night" : "White", onSelection: { store.popupSelectionText = $0 }, selectedMatch: store.selectedResult, onMatch: { index in
