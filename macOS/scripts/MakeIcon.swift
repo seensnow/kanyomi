@@ -6,14 +6,10 @@ let image = NSImage(size: NSSize(width: 1024, height: 1024))
 image.lockFocus()
 NSColor(calibratedRed: 0.91, green: 0.87, blue: 0.77, alpha: 1).setFill()
 NSBezierPath(roundedRect: NSRect(x: 32, y: 32, width: 960, height: 960), xRadius: 215, yRadius: 215).fill()
-// Use a Japanese typeface for the requested kanji mark, with no extra motifs.
-let mark = NSString(string: "簡")
-let attrs: [NSAttributedString.Key: Any] = [
-    .font: NSFont(name: "HiraginoSans-W3", size: 650) ?? .systemFont(ofSize: 650),
-    .foregroundColor: NSColor(calibratedRed: 0.30, green: 0.40, blue: 0.34, alpha: 1)
-]
-let markSize = mark.size(withAttributes: attrs)
-mark.draw(at: NSPoint(x: (1024 - markSize.width) / 2, y: (1024 - markSize.height) / 2), withAttributes: attrs)
+// Draw the same outlined brush glyph used in the sidebar and web brand.
+let markURL = URL(fileURLWithPath: CommandLine.arguments[2])
+guard let mark = NSImage(contentsOf: markURL) else { fatalError("Missing brand mark: \(markURL.path)") }
+mark.draw(in: NSRect(x: 192, y: 192, width: 640, height: 640))
 image.unlockFocus()
 for size in [16,32,128,256,512] {
     for scale in [1,2] {

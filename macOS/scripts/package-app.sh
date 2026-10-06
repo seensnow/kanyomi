@@ -12,8 +12,8 @@ cp "$TASK_BINARY/Kanyomi" "$TASK_APP/Contents/MacOS/"
 # SwiftPM resolves Bundle.module beside Bundle.main.bundleURL.
 cp -R "$TASK_BINARY/KanyomiMac_Kanyomi.bundle" "$TASK_APP/Contents/Resources/"
 cp "$TASK_ROOT/LICENSE" "$TASK_ROOT/THIRD_PARTY.md" "$TASK_APP/Contents/Resources/"
-if [ ! -f "$TASK_ROOT/.build/AppIcon.icns" ] || [ "$TASK_ROOT/scripts/MakeIcon.swift" -nt "$TASK_ROOT/.build/AppIcon.icns" ]; then
-    swift -vfsoverlay "$TASK_ROOT/.build/tooling/toolchain-overlay.json" -module-cache-path "$TASK_ROOT/.build/tooling/swift" "$TASK_ROOT/scripts/MakeIcon.swift" "$TASK_ROOT/.build/AppIcon.iconset"
+if [ ! -f "$TASK_ROOT/.build/AppIcon.icns" ] || [ "$TASK_ROOT/scripts/MakeIcon.swift" -nt "$TASK_ROOT/.build/AppIcon.icns" ] || [ "$TASK_ROOT/Sources/Kanyomi/Resources/BrandMark.pdf" -nt "$TASK_ROOT/.build/AppIcon.icns" ]; then
+    swift -vfsoverlay "$TASK_ROOT/.build/tooling/toolchain-overlay.json" -module-cache-path "$TASK_ROOT/.build/tooling/swift" "$TASK_ROOT/scripts/MakeIcon.swift" "$TASK_ROOT/.build/AppIcon.iconset" "$TASK_ROOT/Sources/Kanyomi/Resources/BrandMark.pdf"
     python3 - "$TASK_ROOT/.build" <<'PY_ICON'
 from pathlib import Path
 import sys,struct

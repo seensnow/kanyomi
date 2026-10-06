@@ -12,7 +12,7 @@ struct MainView: View {
         let _ = interfaceLocale
         NavigationSplitView {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 10) { Text("簡").font(.custom("HiraginoSans-W3", size: 28)).foregroundStyle(accent).accessibilityHidden(true); VStack(alignment: .leading) { Text("簡読み").font(.headline); Text("macOS · beta 7").font(.caption).foregroundStyle(.secondary) } }.padding(20)
+                HStack(spacing: 10) { Image(nsImage: BrandMark.image).resizable().scaledToFit().frame(width: 28, height: 28).foregroundStyle(accent).accessibilityHidden(true); VStack(alignment: .leading) { Text("簡読み").font(.headline); Text("macOS · beta 7").font(.caption).foregroundStyle(.secondary) } }.padding(20)
                 List(selection: $store.section) {
                     Label(L("Library"), systemImage: "books.vertical").tag("Library")
                     Label(L("Dictionary"), systemImage: "character.book.closed").tag("Dictionary")

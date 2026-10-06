@@ -70,10 +70,12 @@ button {
   place-items: center;
   color: #4d6657;
   background: #e8dec4;
-  font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
-  font-size: 27px;
-  font-weight: 400;
   border-radius: 11px;
+}
+
+.brand-mark img {
+  width: 27px;
+  height: 27px;
 }
 
 .global-theme-button {

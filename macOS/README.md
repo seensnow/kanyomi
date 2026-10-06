@@ -67,3 +67,5 @@ See `FEATURES.md` for scope, verification and remaining differences. Source and 
 Live beta 6 Anki check: adding a dictionary-search word through the app succeeded with the localized Basic note type and correctly mapped front/back fields. Definition content, duplicate prevention and persistence after Anki restart were verified. Select an existing deck, note type and exact field names in Settings → Anki; English defaults may differ from localized Anki names. Audio/media and book-context mining were not included in this live check.
 
 Compatibility: legacy SimpleReader data folders, storage keys, bundle identifier and Keychain identifiers are retained to preserve existing libraries and settings. The GitHub repository URL remains unchanged.
+
+The 「簡」 logo uses outlined Yuji Syuku brush lettering consistently across native and web surfaces. Hoshi’s SVG does not identify its original font, so an exact font match is not claimed; font attribution is in macOS/THIRD_PARTY.md.
