@@ -2,6 +2,8 @@
 
 ## macOS 0.1.0-beta.7 — 2026-10-07
 
+- Restore sage green (#4d6657) for the supplied calligraphy mark and center its visible ink by shifting it left in the native icon/sidebar and web brand/favicon. Keep the original PNG source unchanged. Validation: web lint/build, native release packaging/signature verification and visual icon/sidebar checks.
+
 - Replace the font-based 「簡」 approximation with the user-supplied 趙孟頫 calligraphy PNG in the app icon, sidebar, web brand and favicon. Preserve the original PNG bytes and transparency, fit its proportions without stretching, and remove unused Yuji assets and attribution. Validation: matching source/asset SHA-256 hashes, web lint/build, native release packaging, signature verification and visual icon review.
 
 - Replace the macOS app icon/sidebar mark and web brand/favicon with the requested Japanese kanji 「簡」. Use the supplied calligraphy image for the native icon and rebuild cached icons when their generator changes. Rename the display name to 「簡読み」 and internal Swift/npm targets to Kanyomi, including packaging, exports and CI artifacts. Keep legacy data directories, storage keys, bundle identifier and Keychain service so existing libraries and settings remain accessible. Add KANYOMI_DATA_DIR with the old environment variable as a fallback.

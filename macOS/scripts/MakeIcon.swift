@@ -11,7 +11,15 @@ let markURL = URL(fileURLWithPath: CommandLine.arguments[2])
 guard let mark = NSImage(contentsOf: markURL) else { fatalError("Missing brand mark: \(markURL.path)") }
 let markScale = min(640 / mark.size.width, 640 / mark.size.height)
 let markSize = NSSize(width: mark.size.width * markScale, height: mark.size.height * markScale)
-mark.draw(in: NSRect(x: (1024 - markSize.width) / 2, y: (1024 - markSize.height) / 2, width: markSize.width, height: markSize.height))
+// The ink’s horizontal center of mass is 60% across the supplied image.
+// Move it left by 10% of its fitted width to center the visible strokes.
+let tintedMark = NSImage(size: mark.size)
+tintedMark.lockFocus()
+mark.draw(in: NSRect(origin: .zero, size: mark.size))
+NSColor(calibratedRed: 77 / 255, green: 102 / 255, blue: 87 / 255, alpha: 1).setFill()
+NSRect(origin: .zero, size: mark.size).fill(using: .sourceAtop)
+tintedMark.unlockFocus()
+tintedMark.draw(in: NSRect(x: (1024 - markSize.width) / 2 - markSize.width * 0.10, y: (1024 - markSize.height) / 2, width: markSize.width, height: markSize.height))
 image.unlockFocus()
 for size in [16,32,128,256,512] {
     for scale in [1,2] {

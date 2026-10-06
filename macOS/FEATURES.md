@@ -34,4 +34,4 @@ Brand mark: Japanese kanji 「簡」 in the macOS icon/sidebar and web brand/fav
 
 Compatibility: legacy SimpleReader data folders, storage keys, bundle identifier and Keychain identifiers are retained to preserve existing libraries and settings. The GitHub repository URL remains unchanged.
 
-The 「簡」 logo uses the user-supplied 趙孟頫 calligraphy PNG across the native icon/sidebar and web brand/favicon. Its original pixels, transparency and proportions are preserved; no installed font is required.
+The 「簡」 logo uses the user-supplied 趙孟頫 calligraphy PNG across the native icon/sidebar and web brand/favicon. The original source pixels, transparency and proportions are preserved; rendered marks use sage green (#4d6657) and shift left to center the visible ink. No installed font is required.
