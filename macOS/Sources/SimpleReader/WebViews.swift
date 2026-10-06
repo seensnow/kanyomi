@@ -78,19 +78,28 @@ struct ReaderWebView: NSViewRepresentable {
     }
 }
 struct GlossaryWebView: NSViewRepresentable {
+    static let matchScript = "document.addEventListener('click',event=>{const button=event.target.closest('[data-select-match]');if(button)window.webkit.messageHandlers.glossaryMatch.postMessage(Number(button.dataset.selectMatch));})"
+    static let selectionScript = "document.addEventListener('mouseup',()=>{const selection=window.getSelection();const text=selection.toString();const node=selection.anchorNode;const card=(node?.nodeType===1?node:node?.parentElement)?.closest('[data-match]');window.webkit.messageHandlers.glossarySelection.postMessage({text,match:text&&card?Number(card.dataset.match):null});})"
     let html: String
     let css: String
     let engine: DictionaryEngine
     let theme: String
     var onSelection: (String) -> Void = { _ in }
+    var selectedMatch = 0
+    var onMatch: (Int) -> Void = { _ in }
     func makeCoordinator() -> MediaHandler { MediaHandler(engine, onSelection: onSelection) }
     func makeNSView(context: Context) -> WKWebView {
-        let config = WKWebViewConfiguration(); config.websiteDataStore = .nonPersistent(); config.userContentController.add(context.coordinator, name: "glossarySelection"); config.userContentController.addUserScript(WKUserScript(source: "document.addEventListener('mouseup',()=>window.webkit.messageHandlers.glossarySelection.postMessage(window.getSelection().toString()))", injectionTime: .atDocumentEnd, forMainFrameOnly: true)); config.setURLSchemeHandler(context.coordinator, forURLScheme: "dictmedia")
+        let config = WKWebViewConfiguration(); config.websiteDataStore = .nonPersistent(); config.userContentController.add(context.coordinator, name: "glossarySelection"); config.userContentController.addUserScript(WKUserScript(source: Self.selectionScript, injectionTime: .atDocumentEnd, forMainFrameOnly: true)); config.userContentController.add(context.coordinator, name: "glossaryMatch"); config.userContentController.addUserScript(WKUserScript(source: Self.matchScript, injectionTime: .atDocumentEnd, forMainFrameOnly: true)); config.setURLSchemeHandler(context.coordinator, forURLScheme: "dictmedia")
         let web = WKWebView(frame: .zero, configuration: config); web.setValue(false, forKey: "drawsBackground"); web.navigationDelegate = context.coordinator; return web
     }
     func updateNSView(_ web: WKWebView, context: Context) {
-        let key = html + css + theme; guard context.coordinator.lastHTML != key else { return }; context.coordinator.lastHTML = key
+        context.coordinator.onMatch = onMatch
         context.coordinator.onSelection = onSelection
+        if context.coordinator.selectedMatch != selectedMatch {
+            context.coordinator.selectedMatch = selectedMatch
+            if context.coordinator.documentReady { context.coordinator.updateSelection(web) }
+        }
+        let key = html + css + theme; guard context.coordinator.lastHTML != key else { return }; context.coordinator.lastHTML = key
         let styleKey = css + theme
         context.coordinator.pendingBody = html
         if context.coordinator.styleKey != styleKey {
@@ -100,16 +109,22 @@ struct GlossaryWebView: NSViewRepresentable {
             context.coordinator.updateBody(web)
         }
     }
-    static func dismantleNSView(_ web: WKWebView, coordinator: MediaHandler) { web.configuration.userContentController.removeScriptMessageHandler(forName: "glossarySelection"); web.stopLoading() }
+    static func dismantleNSView(_ web: WKWebView, coordinator: MediaHandler) { web.configuration.userContentController.removeScriptMessageHandler(forName: "glossaryMatch"); web.configuration.userContentController.removeScriptMessageHandler(forName: "glossarySelection"); web.stopLoading() }
 }
 final class MediaHandler: NSObject, WKURLSchemeHandler, WKScriptMessageHandler, WKNavigationDelegate {
     let engine: DictionaryEngine
+    var selectedMatch = 0
+    var onMatch: (Int) -> Void = { _ in }
     var lastHTML = ""
     var styleKey = ""
     var pendingBody = ""
     var documentReady = false
     func updateBody(_ web: WKWebView) {
         web.evaluateJavaScript("document.body.innerHTML=\(jsonString(pendingBody));window.scrollTo(0,0)")
+        updateSelection(web)
+    }
+    func updateSelection(_ web: WKWebView) {
+        web.evaluateJavaScript("document.querySelectorAll('[data-select-match]').forEach(button=>button.setAttribute('aria-pressed',Number(button.dataset.selectMatch)===\(selectedMatch)?'true':'false'))")
     }
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         documentReady = true; updateBody(webView)
@@ -117,7 +132,11 @@ final class MediaHandler: NSObject, WKURLSchemeHandler, WKScriptMessageHandler, 
     private var tasks: [ObjectIdentifier: Task<Void, Never>] = [:]
     var onSelection: (String) -> Void
     init(_ engine: DictionaryEngine, onSelection: @escaping (String) -> Void) { self.engine = engine; self.onSelection = onSelection }
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) { if let text = message.body as? String { onSelection(text) } }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) { if message.name == "glossaryMatch", let index = message.body as? Int, index >= 0 { onMatch(index) }
+        else if message.name == "glossarySelection", let selection = message.body as? [String: Any], let text = selection["text"] as? String {
+            if let index = selection["match"] as? Int, index >= 0 { onMatch(index) }
+            onSelection(text)
+        } }
     func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
         let key = ObjectIdentifier(urlSchemeTask)
         guard let url = urlSchemeTask.request.url, let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems, let dictionary = query.first(where: { $0.name == "dictionary" })?.value, let path = query.first(where: { $0.name == "path" })?.value else { urlSchemeTask.didFailWithError(URLError(.badURL)); return }

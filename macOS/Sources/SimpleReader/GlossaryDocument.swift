@@ -1,6 +1,14 @@
 import Foundation
 
 struct GlossaryDocument {
+    static func matches(_ words: [WordResult]) -> String {
+        words.enumerated().map { index, word in
+            let reading = word.reading == word.expression ? "" : " · " + escapeHTML(word.reading)
+            return """
+            <section class="match-card" data-match="\(index)"><header><h2>\(index + 1). \(escapeHTML(word.expression))\(reading)</h2><button type="button" data-select-match="\(index)" aria-pressed="false">\(escapeHTML(L("Use for mining")))</button></header>\(entries(word))</section>
+            """
+        }.joined()
+    }
     static func entries(_ word: WordResult) -> String {
         var output = ""
         if !word.pitchPositions.isEmpty {
@@ -9,7 +17,7 @@ struct GlossaryDocument {
                 let category = position == 0 ? "平板" : position == 1 ? "頭高" : position == mora.count ? "尾高" : "中高"
                 return "<div class=\"pitch-item\"><span class=\"pitch-label\">\(category) [\(position)]</span>\(CardTemplate.graph(mora: mora, position: position))</div>"
             }.joined()
-            output += "<section class=\"pitch-card\"><h2>Pitch accent</h2>\(graphs)</section>"
+            output += "<section class=\"pitch-card\"><h2>\(escapeHTML(L("Pitch accent")))</h2>\(graphs)</section>"
         }
         for (index, glossary) in word.glossaries.enumerated() {
             output += "<details class=\"dictionary-card\" data-dictionary=\"\(escapeHTML(glossary.dictionary))\" open><summary><span class=\"dictionary-number\">\(index + 1)</span>\(escapeHTML(glossary.dictionary))</summary><div class=\"definition-content yomitan-glossary\">\(glossary.html)</div></details>"

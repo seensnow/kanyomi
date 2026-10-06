@@ -1,5 +1,12 @@
 # Changelog
 
+## macOS 0.1.0-beta.5 — 2026-10-06
+
+- Add a persistent Follow system / English / 简体中文 interface selector in Settings → Appearance, with Chinese labels across library, reader, dictionary, settings, vocabulary, statistics and sync screens. Source book/dictionary content and provider errors retain their original language; some technical status messages remain English.
+- Add the Jitendex Japanese–Simplified Chinese community dictionary release page in Dictionary and Settings, labeled as an unofficial machine translation. Download its dictionary ZIP and import without extracting; full downloaded dictionary import was not tested.
+- Replace left/right match paging with one continuous vertical WebKit document containing every lookup match. “Use for mining” and selecting definition text choose the corresponding result for saving, pronunciation, original-book highlighting and Anki; selection preserves scroll position and expanded cards.
+- Validation: 21 native tests pass, including eight-match narrow-viewport vertical scrolling, retained scroll/card state on mining selection, language fallback, and existing EPUB/highlighting/glossary tests. Apple Silicon release app builds and is ad-hoc signed; not notarized.
+
 ## macOS 0.1.0-beta.4 — 2026-10-04
 
 - Hide the dictionary lookup loading spinner; lookups continue without the circular indicator.

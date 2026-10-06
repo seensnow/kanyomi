@@ -29,3 +29,11 @@ td, th { padding: 5px; border: 1px solid var(--border); }
 .pitch-item svg text { fill: var(--text-color); }
 .pitch-item svg polyline { stroke: var(--purple); }
 ::selection { background: var(--blue-bg); color: var(--text-color); }
+
+/* All lookup matches share one native WebKit vertical scrolling surface. */
+.match-card { margin-bottom: 28px; min-width: 0; }
+.match-card > header { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.match-card h2 { flex: 1; margin: 0; overflow-wrap: anywhere; font-size: 20px; }
+.match-card button { color: var(--blue); background: var(--blue-bg); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; cursor: pointer; font: inherit; }
+.match-card button[aria-pressed="true"] { color: var(--green); background: var(--green-bg); border-color: var(--green); }
+.match-card button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }

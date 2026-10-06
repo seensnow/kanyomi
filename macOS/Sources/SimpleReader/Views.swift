@@ -10,29 +10,29 @@ struct MainView: View {
     var body: some View {
         NavigationSplitView {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 10) { Image(systemName: "sparkle").font(.title).foregroundStyle(accent); VStack(alignment: .leading) { Text("SimpleReader").font(.headline); Text("macOS · beta 4").font(.caption).foregroundStyle(.secondary) } }.padding(20)
+                HStack(spacing: 10) { Image(systemName: "sparkle").font(.title).foregroundStyle(accent); VStack(alignment: .leading) { Text("SimpleReader").font(.headline); Text("macOS · beta 5").font(.caption).foregroundStyle(.secondary) } }.padding(20)
                 List(selection: $store.section) {
-                    Label("Library", systemImage: "books.vertical").tag("Library")
-                    Label("Dictionary", systemImage: "character.book.closed").tag("Dictionary")
-                    Label("Vocabulary", systemImage: "tray.full").tag("Vocabulary")
-                    Label("Statistics", systemImage: "chart.bar.xaxis").tag("Statistics")
-                    Label("Sync & Backup", systemImage: "arrow.triangle.2.circlepath").tag("Sync")
+                    Label(L("Library"), systemImage: "books.vertical").tag("Library")
+                    Label(L("Dictionary"), systemImage: "character.book.closed").tag("Dictionary")
+                    Label(L("Vocabulary"), systemImage: "tray.full").tag("Vocabulary")
+                    Label(L("Statistics"), systemImage: "chart.bar.xaxis").tag("Statistics")
+                    Label(L("Sync & Backup"), systemImage: "arrow.triangle.2.circlepath").tag("Sync")
                     Section("Bookshelves") {
-                        Button { store.selectedShelf = ""; store.section = "Library"; store.closeBook() } label: { Label("All books", systemImage: "square.grid.2x2") }.buttonStyle(.plain)
+                        Button { store.selectedShelf = ""; store.section = "Library"; store.closeBook() } label: { Label(L("All books"), systemImage: "square.grid.2x2") }.buttonStyle(.plain)
                         ForEach(store.state.shelves, id: \.self) { shelf in
                             Button { store.selectedShelf = shelf; store.section = "Library"; store.closeBook() } label: { Label(shelf, systemImage: "folder") }.buttonStyle(.plain)
-                                .contextMenu { Button("Remove shelf") { store.state.shelves.removeAll { $0 == shelf }; for i in store.state.books.indices where store.state.books[i].shelf == shelf { store.state.books[i].shelf = "" }; if store.selectedShelf == shelf { store.selectedShelf = "" }; store.saveSoon() } }
+                                .contextMenu { Button(L("Remove shelf")) { store.state.shelves.removeAll { $0 == shelf }; for i in store.state.books.indices where store.state.books[i].shelf == shelf { store.state.books[i].shelf = "" }; if store.selectedShelf == shelf { store.selectedShelf = "" }; store.saveSoon() } }
                         }
-                        Button { addingShelf = true } label: { Label("New shelf", systemImage: "plus") }.buttonStyle(.plain).foregroundStyle(.secondary)
+                        Button { addingShelf = true } label: { Label(L("New shelf"), systemImage: "plus") }.buttonStyle(.plain).foregroundStyle(.secondary)
                     }
                 }.listStyle(.sidebar)
                 Divider()
                 VStack(alignment: .leading, spacing: 8) {
                     let today = store.state.days.filter { $0.date == ReaderStore.dateKey(Date()) }.reduce(0.0) { $0 + $1.seconds } / 60
-                    HStack { Text("TODAY").font(.caption2).tracking(1.8); Spacer(); Text("\(Int(today)) / \(store.preferences.dailyGoal) min").font(.caption) }.foregroundStyle(.secondary)
+                    HStack { Text(L("TODAY")).font(.caption2).tracking(1.8); Spacer(); Text("\(Int(today)) / \(store.preferences.dailyGoal) min").font(.caption) }.foregroundStyle(.secondary)
                     ProgressView(value: min(1, today / Double(max(1, store.preferences.dailyGoal)))).tint(accent)
                 }.padding(18)
-                SettingsLink { Label("Settings", systemImage: "gearshape") }.buttonStyle(.plain).padding(.horizontal, 18).padding(.bottom, 18)
+                SettingsLink { Label(L("Settings"), systemImage: "gearshape") }.buttonStyle(.plain).padding(.horizontal, 18).padding(.bottom, 18)
             }.navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 260)
         } detail: {
             Group {
@@ -50,8 +50,8 @@ struct MainView: View {
             if let busy = store.busy { HStack { ProgressView().controlSize(.small); Text(busy) }.padding(12).background(.regularMaterial, in: Capsule()).padding(18) }
             else if let message = store.message { Text(message).padding(12).background(.regularMaterial, in: Capsule()).padding(18).onAppear { DispatchQueue.main.asyncAfter(deadline: .now() + 4) { if store.message == message { store.message = nil } } }.id(message) }
         }
-        .alert("SimpleReader", isPresented: Binding(get: { store.error != nil }, set: { if !$0 { store.error = nil } })) { Button("OK") { store.error = nil } } message: { Text(store.error ?? "") }
-        .alert("New Bookshelf", isPresented: $addingShelf) { TextField("Name", text: $shelfName); Button("Create") { let name = shelfName.trimmingCharacters(in: .whitespacesAndNewlines); if !name.isEmpty && !store.state.shelves.contains(name) { store.state.shelves.append(name); store.saveSoon() }; shelfName = "" }; Button("Cancel", role: .cancel) {} }
+        .alert("SimpleReader", isPresented: Binding(get: { store.error != nil }, set: { if !$0 { store.error = nil } })) { Button(L("OK")) { store.error = nil } } message: { Text(store.error ?? "") }
+        .alert(L("New Bookshelf"), isPresented: $addingShelf) { TextField(L("Name"), text: $shelfName); Button(L("Create")) { let name = shelfName.trimmingCharacters(in: .whitespacesAndNewlines); if !name.isEmpty && !store.state.shelves.contains(name) { store.state.shelves.append(name); store.saveSoon() }; shelfName = "" }; Button(L("Cancel"), role: .cancel) {} }
         .onChange(of: store.section) { _, value in if value != "Library" { store.closeBook() } }
     }
 }
@@ -59,11 +59,11 @@ struct LibraryView: View {
     @EnvironmentObject var store: ReaderStore
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .firstTextBaseline) { VStack(alignment: .leading, spacing: 8) { Text(store.selectedShelf.isEmpty ? "Your reading room" : store.selectedShelf).font(.system(size: 32, weight: .medium, design: .serif)); Text("\(store.filteredBooks.count) books · A little Japanese, every day.").foregroundStyle(.secondary) }; Spacer(); Button { store.pickBooks() } label: { Label("Import EPUB", systemImage: "plus") }.buttonStyle(.borderedProminent).disabled(store.busy != nil) }.padding(30)
-            HStack { Image(systemName: "magnifyingglass").foregroundStyle(.secondary); TextField("Search title or author", text: $store.librarySearch).textFieldStyle(.plain); Spacer(); Picker("Sort", selection: $store.sortByTitle) { Text("Recently read").tag(false); Text("Title").tag(true) }.frame(width: 190) }.padding(.horizontal, 30).padding(.bottom, 20)
+            HStack(alignment: .firstTextBaseline) { VStack(alignment: .leading, spacing: 8) { Text(store.selectedShelf.isEmpty ? L("Your reading room") : store.selectedShelf).font(.system(size: 32, weight: .medium, design: .serif)); Text(L("%d books · A little Japanese, every day.", store.filteredBooks.count)).foregroundStyle(.secondary) }; Spacer(); Button { store.pickBooks() } label: { Label(L("Import EPUB"), systemImage: "plus") }.buttonStyle(.borderedProminent).disabled(store.busy != nil) }.padding(30)
+            HStack { Image(systemName: "magnifyingglass").foregroundStyle(.secondary); TextField(L("Search title or author"), text: $store.librarySearch).textFieldStyle(.plain); Spacer(); Picker(L("Sort"), selection: $store.sortByTitle) { Text(L("Recently read")).tag(false); Text(L("Title")).tag(true) }.frame(width: 190) }.padding(.horizontal, 30).padding(.bottom, 20)
             Divider()
             if store.state.books.isEmpty {
-                ContentUnavailableView { Label("Make room for a good book", systemImage: "book.closed") } description: { Text("Import a Japanese EPUB, add your Yomitan dictionaries, and start reading.\nYour library lives on this Mac.") } actions: { Button("Import EPUB…") { store.pickBooks() }.buttonStyle(.borderedProminent); Button("Try sample book & dictionary") { store.loadSample() } }
+                ContentUnavailableView { Label(L("Make room for a good book"), systemImage: "book.closed") } description: { Text(L("Import a Japanese EPUB, add your Yomitan dictionaries, and start reading.\nYour library lives on this Mac.")) } actions: { Button(L("Import EPUB…")) { store.pickBooks() }.buttonStyle(.borderedProminent); Button(L("Try sample book & dictionary")) { store.loadSample() } }
             } else {
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 180, maximum: 240), spacing: 28)], alignment: .leading, spacing: 30) {
@@ -71,7 +71,7 @@ struct LibraryView: View {
                     }.padding(30)
                 }
             }
-        }.background(Color(nsColor: .windowBackgroundColor)).navigationTitle("Library")
+        }.background(Color(nsColor: .windowBackgroundColor)).navigationTitle(L("Library"))
         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
             for provider in providers { _ = provider.loadObject(ofClass: URL.self) { url, _ in if let url { Task { @MainActor in store.importBooks([url]) } } } }; return true
         }
@@ -96,13 +96,13 @@ struct BookTile: View {
             }.contentShape(Rectangle())
         }.buttonStyle(.plain)
         .contextMenu {
-            Button("Read") { store.openBook(book.id) }
+            Button(L("Read")) { store.openBook(book.id) }
             Menu("Move to shelf") {
-                Button("None") { setShelf("") }
+                Button(L("None")) { setShelf("") }
                 ForEach(store.state.shelves, id: \.self) { shelf in Button(shelf) { setShelf(shelf) } }
             }
-            Button("Reveal imported EPUB") { NSWorkspace.shared.activateFileViewerSelecting([store.root.appendingPathComponent("Books/\(book.id)/Original.epub")]) }
-            Divider(); Button("Remove book…", role: .destructive) { store.deleteBook(book.id) }
+            Button(L("Reveal imported EPUB")) { NSWorkspace.shared.activateFileViewerSelecting([store.root.appendingPathComponent("Books/\(book.id)/Original.epub")]) }
+            Divider(); Button(L("Remove book…"), role: .destructive) { store.deleteBook(book.id) }
         }
     }
     func setShelf(_ value: String) { if let i = store.state.books.firstIndex(where: { $0.id == book.id }) { store.state.books[i].shelf = value; store.saveSoon() } }
@@ -118,14 +118,14 @@ struct ReadingView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 16) {
-                Button { store.closeBook() } label: { Image(systemName: "chevron.left") }.help("Back to library")
-                Button { showContents.toggle() } label: { Image(systemName: "list.bullet") }.help("Contents, search and bookmarks")
+                Button { store.closeBook() } label: { Image(systemName: "chevron.left") }.help(L("Back to library"))
+                Button { showContents.toggle() } label: { Image(systemName: "list.bullet") }.help(L("Contents, search and bookmarks"))
                 VStack(alignment: .leading, spacing: 3) { Text(book.title).font(.headline).lineLimit(1); Text(book.chapters[book.chapter].title).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
                 Spacer()
-                Button { store.isTiming.toggle() } label: { Image(systemName: store.isTiming ? "pause.circle" : "play.circle") }.help("Pause / resume reading statistics")
-                Button { store.addBookmark() } label: { Image(systemName: "bookmark") }.help("Add bookmark · ⌘D")
+                Button { store.isTiming.toggle() } label: { Image(systemName: store.isTiming ? "pause.circle" : "play.circle") }.help(L("Pause / resume reading statistics"))
+                Button { store.addBookmark() } label: { Image(systemName: "bookmark") }.help(L("Add bookmark · ⌘D"))
                 Button { showAppearance.toggle() } label: { Image(systemName: "textformat.size") }.popover(isPresented: $showAppearance) { AppearanceControls().environmentObject(store).padding(20).frame(width: 340) }
-                Button { showDictionary.toggle() } label: { Image(systemName: "character.book.closed") }.help("Dictionary")
+                Button { showDictionary.toggle() } label: { Image(systemName: "character.book.closed") }.help(L("Dictionary"))
             }.buttonStyle(.borderless).padding(.horizontal, 20).padding(.vertical, 14)
             Divider()
             HStack(spacing: 0) {
@@ -139,14 +139,14 @@ struct ReadingView: View {
                 Button { store.moveChapter(-1) } label: { Image(systemName: "chevron.left") }.disabled(book.chapter == 0)
                 Text("\(book.chapter + 1) / \(book.chapters.count)").font(.caption).monospacedDigit()
                 Button { store.moveChapter(1) } label: { Image(systemName: "chevron.right") }.disabled(book.chapter + 1 >= book.chapters.count)
-                Spacer(); Text("Click a word · Shift + hover to look up").font(.caption).foregroundStyle(.secondary); Spacer()
+                Spacer(); Text(L("Click a word · Shift + hover to look up")).font(.caption).foregroundStyle(.secondary); Spacer()
                 Text("\(Int(book.progress * 100))% · \(book.characterPosition.formatted()) / \(book.totalCharacters.formatted()) 字").font(.caption).foregroundStyle(.secondary)
             }.buttonStyle(.borderless).padding(12)
         }.navigationTitle(book.title)
     }
     var contentsPanel: some View {
         VStack(spacing: 8) {
-            Picker("Navigation", selection: $tab) { Text("Contents").tag("Contents"); Text("Saved").tag("Saved"); Text("Search").tag("Search") }.pickerStyle(.segmented).padding(10)
+            Picker(L("Navigation"), selection: $tab) { Text(L("Contents")).tag("Contents"); Text(L("Saved")).tag("Saved"); Text(L("Search")).tag("Search") }.pickerStyle(.segmented).padding(10)
             if tab == "Contents" {
                 List {
                     if !book.contents.isEmpty { ForEach(book.contents) { entry in Button { store.navigate(path: entry.path) } label: { Text(entry.title).padding(.leading, CGFloat(entry.depth) * 8).frame(maxWidth: .infinity, alignment: .leading) }.buttonStyle(.plain) } }
@@ -154,14 +154,14 @@ struct ReadingView: View {
                 }
             } else if tab == "Saved" {
                 List { ForEach(store.state.passages.filter { $0.bookID == book.id }) { passage in
-                    VStack(alignment: .leading) { Button { store.jump(to: passage) } label: { Label(passage.text, systemImage: passage.kind == "highlight" ? "highlighter" : "bookmark").lineLimit(3) }.buttonStyle(.plain); TextField("Add a note…", text: Binding(get: { store.state.passages.first(where: { $0.id == passage.id })?.note ?? "" }, set: { value in if let i = store.state.passages.firstIndex(where: { $0.id == passage.id }) { store.state.passages[i].note = value; store.saveSoon() } })).font(.caption) }
-                        .contextMenu { Button("Remove") { store.state.passages.removeAll { $0.id == passage.id }; store.saveSoon() } }
+                    VStack(alignment: .leading) { Button { store.jump(to: passage) } label: { Label(passage.text, systemImage: passage.kind == "highlight" ? "highlighter" : "bookmark").lineLimit(3) }.buttonStyle(.plain); TextField(L("Add a note…"), text: Binding(get: { store.state.passages.first(where: { $0.id == passage.id })?.note ?? "" }, set: { value in if let i = store.state.passages.firstIndex(where: { $0.id == passage.id }) { store.state.passages[i].note = value; store.saveSoon() } })).font(.caption) }
+                        .contextMenu { Button(L("Remove")) { store.state.passages.removeAll { $0.id == passage.id }; store.saveSoon() } }
                 } }
             } else {
                 TextField("Search in book", text: $bookSearch).textFieldStyle(.roundedBorder).padding(.horizontal, 10)
                 List { ForEach(searchHits, id: \.id) { hit in Button { store.navigate(chapter: hit.chapter, offset: hit.offset) } label: { VStack(alignment: .leading, spacing: 5) { Text(book.chapters[hit.chapter].title).font(.caption).foregroundStyle(.secondary); Text(hit.preview).lineLimit(3) } }.buttonStyle(.plain) } }
             }
-            Menu("Audiobook") { Button("Import audio…") { store.pickAudiobook() }; Button("Match SRT subtitles…") { store.pickSubtitles() } }.padding(10)
+            Menu(L("Audiobook")) { Button(L("Import audio…")) { store.pickAudiobook() }; Button(L("Match SRT subtitles…")) { store.pickSubtitles() } }.padding(10)
         }.background(Color(nsColor: .controlBackgroundColor))
     }
     struct Hit { var chapter: Int; var offset: Int; var preview: String; var id: String { "\(chapter)-\(offset)" } }
@@ -183,7 +183,7 @@ struct DictionaryPanel: View {
     @State private var query = ""
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack { Image(systemName: "magnifyingglass").foregroundStyle(.secondary); TextField("Look up Japanese", text: $query).textFieldStyle(.plain).onSubmit { store.lookup(query) } }.padding(16)
+            HStack { Image(systemName: "magnifyingglass").foregroundStyle(.secondary); TextField(L("Look up Japanese"), text: $query).textFieldStyle(.plain).onSubmit { store.lookup(query) } }.padding(16)
             Divider()
             if let word = store.activeResult {
                 VStack(alignment: .leading, spacing: 10) {
@@ -195,9 +195,9 @@ struct DictionaryPanel: View {
                             Spacer(minLength: 0)
                             VStack(alignment: .trailing, spacing: 8) {
                                 Button { store.playWord(word) } label: {
-                                    Label(store.pronunciationLoading ? "Loading…" : "Listen", systemImage: "speaker.wave.2.fill")
-                                }.buttonStyle(.borderedProminent).tint(.blue).disabled(store.pronunciationLoading).help("Play source audio; use Japanese speech if unavailable")
-                                Button { store.speak(word) } label: { Label("Japanese voice", systemImage: "waveform") }.font(.caption).buttonStyle(.borderless).help("Read aloud using the Mac's Japanese voice")
+                                    Label(L(store.pronunciationLoading ? "Loading…" : "Listen"), systemImage: "speaker.wave.2.fill")
+                                }.buttonStyle(.borderedProminent).tint(.blue).disabled(store.pronunciationLoading).help(L("Play source audio; use Japanese speech if unavailable"))
+                                Button { store.speak(word) } label: { Label(L("Japanese voice"), systemImage: "waveform") }.font(.caption).buttonStyle(.borderless).help(L("Read aloud using the Mac's Japanese voice"))
                             }
                         }
                         if !store.pronunciationStatus.isEmpty { Text(store.pronunciationStatus).font(.caption2).foregroundStyle(.secondary) }
@@ -210,25 +210,28 @@ struct DictionaryPanel: View {
                             }
                         }
                         if store.results.count > 1 {
-                            HStack { Button { store.selectedResult = max(0, store.selectedResult - 1) } label: { Image(systemName: "chevron.left") }.disabled(store.selectedResult == 0); Text("\(store.selectedResult + 1) of \(store.results.count) matches").font(.caption); Button { store.selectedResult = min(store.results.count - 1, store.selectedResult + 1) } label: { Image(systemName: "chevron.right") }.disabled(store.selectedResult + 1 == store.results.count) }
+                            Text(L("%d matches · Scroll for all definitions", store.results.count)).font(.caption)
                         }
                 }.frame(maxWidth: .infinity, alignment: .leading).fixedSize(horizontal: false, vertical: true).padding(16).background(Color.blue.opacity(0.06))
                 Divider()
-                if word.glossaries.count > 1 { Picker("Mining definition", selection: $store.selectedGlossary) { ForEach(Array(word.glossaries.enumerated()), id: \.offset) { i, glossary in Text(glossary.dictionary).tag(i) } }.padding(.horizontal, 12).padding(.vertical, 8) }
-                GlossaryWebView(html: GlossaryDocument.entries(word), css: store.dictionaryCSS, engine: store.engine, theme: colorScheme == .dark ? "Night" : "White", onSelection: { store.popupSelectionText = $0 })
+                if word.glossaries.count > 1 { Picker(L("Mining definition"), selection: $store.selectedGlossary) { ForEach(Array(word.glossaries.enumerated()), id: \.offset) { i, glossary in Text(glossary.dictionary).tag(i) } }.padding(.horizontal, 12).padding(.vertical, 8) }
+                GlossaryWebView(html: GlossaryDocument.matches(store.results), css: store.dictionaryCSS, engine: store.engine, theme: colorScheme == .dark ? "Night" : "White", onSelection: { store.popupSelectionText = $0 }, selectedMatch: store.selectedResult, onMatch: { index in
+                    guard store.results.indices.contains(index), store.selectedResult != index else { return }
+                    store.selectedGlossary = 0; store.popupSelectionText = ""; store.stopPronunciation(); store.selectedResult = index
+                })
                 if !store.sentence.isEmpty { Text(store.sentence).font(.caption).foregroundStyle(.secondary).lineLimit(3).textSelection(.enabled).padding(12) }
-                HStack { Button("Save word") { store.mine(word, toAnki: false) }; Button("Add to Anki") { store.mine(word, toAnki: true) }.buttonStyle(.borderedProminent) }.disabled(store.busy != nil).padding(12)
-                if store.book != nil { Button { store.addBookmark(kind: "highlight") } label: { Label("Highlight selection", systemImage: "highlighter") }.buttonStyle(.borderless).padding(.horizontal, 12).padding(.bottom, 12) }
+                HStack { Button(L("Save word")) { store.mine(word, toAnki: false) }; Button(L("Add to Anki")) { store.mine(word, toAnki: true) }.buttonStyle(.borderedProminent) }.disabled(store.busy != nil).padding(12)
+                if store.book != nil { Button { store.addBookmark(kind: "highlight") } label: { Label(L("Highlight selection"), systemImage: "highlighter") }.buttonStyle(.borderless).padding(.horizontal, 12).padding(.bottom, 12) }
             } else if !store.kanjiText.isEmpty { ScrollView { Text(store.kanjiText).textSelection(.enabled).padding(20) } }
             else {
                 VStack(spacing: 14) {
                     Image(systemName: "character.book.closed").font(.system(size: 42)).foregroundStyle(accent.opacity(0.7))
-                    Text(store.lookupText.isEmpty ? "A word opens a world." : "No matching entries").font(.system(size: 21, design: .serif))
-                    Text(store.state.dictionaries.isEmpty ? "Import a Yomitan dictionary ZIP to look up words offline, including conjugated forms." : store.lookupText.isEmpty ? "Click a word in your book, or search above." : "Try another term, or add another dictionary.").font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                    if store.state.dictionaries.isEmpty { Button("Import dictionary…") { store.pickDictionary() } }
+                    Text(L(store.lookupText.isEmpty ? "A word opens a world." : "No matching entries")).font(.system(size: 21, design: .serif))
+                    Text(L(store.state.dictionaries.isEmpty ? "Import a Yomitan dictionary ZIP to look up words offline, including conjugated forms." : store.lookupText.isEmpty ? "Click a word in your book, or search above." : "Try another term, or add another dictionary.")).font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    if store.state.dictionaries.isEmpty { Button(L("Import dictionary…")) { store.pickDictionary() } }
                 }.padding(28).frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-        }.background(Color(nsColor: .controlBackgroundColor)).onChange(of: store.selectedResult) { _, _ in store.selectedGlossary = 0; store.popupSelectionText = ""; store.stopPronunciation() }.onChange(of: store.lookupText) { _, _ in store.stopPronunciation() }
+        }.background(Color(nsColor: .controlBackgroundColor)).onChange(of: store.lookupText) { _, _ in store.stopPronunciation() }
     }
 }
 struct DictionaryPage: View {
@@ -238,40 +241,41 @@ struct DictionaryPage: View {
             HStack(spacing: 0) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        Text("Your dictionaries").font(.system(size: 30, design: .serif))
-                        Text("Yomitan terms, frequencies, pitch accents and kanji. Search works offline after import.").foregroundStyle(.secondary)
-                        Button { store.pickDictionary() } label: { Label("Import dictionary ZIP…", systemImage: "plus") }.buttonStyle(.borderedProminent).disabled(store.busy != nil)
+                        Text(L("Your dictionaries")).font(.system(size: 30, design: .serif))
+                        Text(L("Yomitan terms, frequencies, pitch accents and kanji. Search works offline after import.")).foregroundStyle(.secondary)
+                        Button { store.pickDictionary() } label: { Label(L("Import dictionary ZIP…"), systemImage: "plus") }.buttonStyle(.borderedProminent).disabled(store.busy != nil)
                         DictionaryDownloads()
-                        Text("Installed dictionaries").font(.headline)
+                        Text(L("Installed dictionaries")).font(.headline)
                         DictionaryList().frame(height: max(220, geometry.size.height - 450))
                     }.frame(maxWidth: .infinity, alignment: .leading).padding(24)
                 }.frame(maxWidth: .infinity, maxHeight: .infinity)
                 Divider()
                 DictionaryPanel().frame(width: min(460, geometry.size.width * 0.46), height: geometry.size.height)
             }.frame(width: geometry.size.width, height: geometry.size.height, alignment: .topLeading)
-        }.navigationTitle("Dictionary")
+        }.navigationTitle(L("Dictionary"))
     }
 }
 struct DictionaryDownloads: View {
     @State private var expanded = true
     var body: some View {
-        DisclosureGroup("Recommended dictionaries · Download", isExpanded: $expanded) {
+        DisclosureGroup(L("Recommended dictionaries · Download"), isExpanded: $expanded) {
             VStack(alignment: .leading, spacing: 10) {
                 download("Jitendex", detail: "Japanese–English definitions and examples · Start here", url: "https://github.com/stephenmk/stephenmk.github.io/releases/latest/download/jitendex-yomitan.zip")
+                download("Jitendex 日中辞典", detail: "Japanese–Simplified Chinese · Community machine translation; download the dictionary ZIP from Releases", url: "https://github.com/greyindex/jitendex-yomitan-zh/releases/latest")
                 download("JMnedict", detail: "Japanese names: people and places", url: "https://github.com/yomidevs/jmdict-yomitan/releases/latest/download/JMnedict.zip")
                 download("KANJIDIC", detail: "Kanji meanings and readings · English", url: "https://github.com/yomidevs/jmdict-yomitan/releases/latest/download/KANJIDIC_english.zip")
-                Text("Download a ZIP, then choose Import dictionary ZIP… without unzipping it.").font(.caption).foregroundStyle(.secondary)
+                Text(L("Download a ZIP, then choose Import dictionary ZIP… without unzipping it.")).font(.caption).foregroundStyle(.secondary)
                 HStack {
-                    Link("Jitendex website", destination: URL(string: "https://jitendex.org/pages/downloads.html")!)
-                    Link("More dictionaries", destination: URL(string: "https://github.com/yomidevs/jmdict-yomitan")!)
+                    Link(L("Jitendex website"), destination: URL(string: "https://jitendex.org/pages/downloads.html")!)
+                    Link(L("More dictionaries"), destination: URL(string: "https://github.com/yomidevs/jmdict-yomitan")!)
                 }.font(.caption)
             }.fixedSize(horizontal: false, vertical: true).padding(.top, 8)
         }.fixedSize(horizontal: false, vertical: true)
     }
     private func download(_ title: String, detail: String, url: String) -> some View {
         VStack(alignment: .leading, spacing: 3) {
-            Link(destination: URL(string: url)!) { Label(title + " ZIP", systemImage: "arrow.down.circle") }
-            Text(detail).font(.caption).foregroundStyle(.secondary)
+            Link(destination: URL(string: url)!) { Label(title, systemImage: "arrow.down.circle") }
+            Text(L(detail)).font(.caption).foregroundStyle(.secondary)
         }
     }
 }
@@ -283,10 +287,10 @@ struct DictionaryList: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack { Toggle(d.title, isOn: Binding(get: { store.state.dictionaries.first(where: { $0.id == d.id })?.enabled ?? false }, set: { enabled in if let i = store.state.dictionaries.firstIndex(where: { $0.id == d.id }) { store.state.dictionaries[i].enabled = enabled; store.updateDictionaries() } })); Spacer(); Button { move(index, -1) } label: { Image(systemName: "arrow.up") }.disabled(index == 0); Button { move(index, 1) } label: { Image(systemName: "arrow.down") }.disabled(index + 1 == store.state.dictionaries.count) }
                     Text(d.summary).font(.caption).foregroundStyle(.secondary)
-                    HStack { Picker("Definitions", selection: Binding(get: { store.state.dictionaries.first(where: { $0.id == d.id })?.category ?? "bilingual" }, set: { category in if let i = store.state.dictionaries.firstIndex(where: { $0.id == d.id }) { store.state.dictionaries[i].category = category; store.saveSoon() } })) { Text("Bilingual").tag("bilingual"); Text("Monolingual").tag("monolingual"); Text("Exclude from Anki").tag("exclude") }; Spacer(); Button("Remove", role: .destructive) { store.removeDictionary(d.id) } }
+                    HStack { Picker(L("Definitions"), selection: Binding(get: { store.state.dictionaries.first(where: { $0.id == d.id })?.category ?? "bilingual" }, set: { category in if let i = store.state.dictionaries.firstIndex(where: { $0.id == d.id }) { store.state.dictionaries[i].category = category; store.saveSoon() } })) { Text(L("Bilingual")).tag("bilingual"); Text(L("Monolingual")).tag("monolingual"); Text(L("Exclude from Anki")).tag("exclude") }; Spacer(); Button(L("Remove"), role: .destructive) { store.removeDictionary(d.id) } }
                 }.padding(.vertical, 8)
             }
-        }.overlay { if store.state.dictionaries.isEmpty { Text("No dictionaries imported yet").foregroundStyle(.secondary) } }
+        }.overlay { if store.state.dictionaries.isEmpty { Text(L("No dictionaries imported yet")).foregroundStyle(.secondary) } }
     }
     func move(_ index: Int, _ delta: Int) { let next = index + delta; guard store.state.dictionaries.indices.contains(next) else { return }; store.state.dictionaries.swapAt(index, next); store.updateDictionaries() }
 }
@@ -296,17 +300,17 @@ struct VocabularyView: View {
     var words: [MinedWord] { store.state.words.reversed().filter { search.isEmpty || ($0.expression + $0.reading + $0.definition).localizedCaseInsensitiveContains(search) } }
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            HStack { VStack(alignment: .leading, spacing: 7) { Text("Words worth keeping").font(.system(size: 30, design: .serif)); Text("\(store.state.words.count) saved · \(store.state.words.filter { $0.ankiID != nil }.count) sent to Anki").foregroundStyle(.secondary) }; Spacer(); Button("Export TSV…") { store.exportVocabulary() } }
+            HStack { VStack(alignment: .leading, spacing: 7) { Text(L("Words worth keeping")).font(.system(size: 30, design: .serif)); Text(L("%d saved · %d sent to Anki", store.state.words.count, store.state.words.filter { $0.ankiID != nil }.count)).foregroundStyle(.secondary) }; Spacer(); Button(L("Export TSV…")) { store.exportVocabulary() } }
             TextField("Search vocabulary", text: $search).textFieldStyle(.roundedBorder)
             List(words) { word in
                 HStack(alignment: .top, spacing: 20) {
                     VStack(alignment: .leading, spacing: 5) { Text(word.expression).font(.title2); Text(word.reading).foregroundStyle(.secondary) }.frame(width: 150, alignment: .leading)
                     VStack(alignment: .leading, spacing: 5) { Text(word.definition).lineLimit(3); Text(word.sentence).font(.caption).foregroundStyle(.secondary).lineLimit(2); Text(word.book).font(.caption2).foregroundStyle(accent) }
-                    Spacer(); if word.ankiID != nil { Image(systemName: "checkmark.circle.fill").foregroundStyle(.green).help("Added to Anki") }
+                    Spacer(); if word.ankiID != nil { Image(systemName: "checkmark.circle.fill").foregroundStyle(.green).help(L("Added to Anki")) }
                 }.padding(.vertical, 10).textSelection(.enabled)
-                .contextMenu { Button("Look up") { store.section = "Dictionary"; store.lookup(word.expression) }; Button("Remove saved word") { store.state.words.removeAll { $0.id == word.id }; store.saveSoon() } }
+                .contextMenu { Button(L("Look up")) { store.section = "Dictionary"; store.lookup(word.expression) }; Button(L("Remove saved word")) { store.state.words.removeAll { $0.id == word.id }; store.saveSoon() } }
             }
-        }.padding(30).navigationTitle("Vocabulary")
+        }.padding(30).navigationTitle(L("Vocabulary"))
     }
 }
 struct StatisticsView: View {
@@ -319,24 +323,24 @@ struct StatisticsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
-                HStack { Text("Every page adds up.").font(.system(size: 32, design: .serif)); Spacer(); Picker("Period", selection: $period) { Text("7 days").tag(7); Text("30 days").tag(30); Text("90 days").tag(90) }.frame(width: 170) }
+                HStack { Text(L("Every page adds up.")).font(.system(size: 32, design: .serif)); Spacer(); Picker(L("Period"), selection: $period) { Text(L("7 days")).tag(7); Text(L("30 days")).tag(30); Text(L("90 days")).tag(90) }.frame(width: 170) }
                 HStack(spacing: 18) {
                     metric("READING TIME", String(format: "%.1f h", store.state.days.reduce(0) { $0 + $1.seconds } / 3600))
                     metric("CHARACTERS", store.state.days.reduce(0) { $0 + $1.characters }.formatted())
                     metric("WORDS LOOKED UP", store.state.days.reduce(0) { $0 + $1.lookups }.formatted())
                     metric("ANKI NOTES", store.state.words.filter { $0.ankiID != nil }.count.formatted())
                 }
-                Text("Reading minutes").font(.headline)
+                Text(L("Reading minutes")).font(.headline)
                 Chart(days) { day in BarMark(x: .value("Date", String(day.id.suffix(5))), y: .value("Minutes", day.minutes)).foregroundStyle(accent.gradient) }.frame(height: 240)
-                Text("Characters read").font(.headline)
+                Text(L("Characters read")).font(.headline)
                 Chart(days) { day in BarMark(x: .value("Date", String(day.id.suffix(5))), y: .value("Characters", day.characters)).foregroundStyle(Color(red: 0.42, green: 0.51, blue: 0.43).gradient) }.frame(height: 180)
-                Text("Reading time pauses when this app is in the background or idle for 90 seconds. Large jumps and backward scrolling don't count as newly read characters.").font(.caption).foregroundStyle(.secondary)
+                Text(L("Reading time pauses when this app is in the background or idle for 90 seconds. Large jumps and backward scrolling don't count as newly read characters.")).font(.caption).foregroundStyle(.secondary)
                 Divider()
                 ForEach(store.state.books) { book in let records = store.state.days.filter { $0.bookID == book.id }; HStack { Text(book.title); Spacer(); Text("\(Int(records.reduce(0) { $0 + $1.seconds } / 60)) min · \(records.reduce(0) { $0 + $1.characters }.formatted()) 字").foregroundStyle(.secondary) } }
             }.padding(30)
-        }.navigationTitle("Statistics")
+        }.navigationTitle(L("Statistics"))
     }
-    func metric(_ title: String, _ value: String) -> some View { VStack(alignment: .leading, spacing: 14) { Text(title).font(.caption2).tracking(1).foregroundStyle(.secondary); Text(value).font(.system(size: 28, design: .rounded)) }.frame(maxWidth: .infinity, alignment: .leading).padding(20).background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12)) }
+    func metric(_ title: String, _ value: String) -> some View { VStack(alignment: .leading, spacing: 14) { Text(L(title)).font(.caption2).tracking(1).foregroundStyle(.secondary); Text(value).font(.system(size: 28, design: .rounded)) }.frame(maxWidth: .infinity, alignment: .leading).padding(20).background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12)) }
 }
 struct AudiobookBar: View {
     @EnvironmentObject var store: ReaderStore
@@ -347,8 +351,8 @@ struct AudiobookBar: View {
             Button { store.seekAudio(store.audioTime + 10) } label: { Image(systemName: "goforward.10") }
             Text(String(format: "%02d:%02d", Int(store.audioTime) / 60, Int(store.audioTime) % 60)).font(.caption).monospacedDigit()
             Text(store.currentCue?.text ?? "Audiobook").font(.caption).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
-            Button("Replay line") { store.replayCue() }.disabled(store.currentCue == nil)
-            Picker("Speed", selection: Binding(get: { store.book?.audioRate ?? 1 }, set: { store.setAudioRate($0) })) { ForEach([Float(0.75), 1, 1.25, 1.5, 2], id: \.self) { rate in Text(String(format: "%.2g×", rate)).tag(rate) } }.frame(width: 130)
+            Button(L("Replay line")) { store.replayCue() }.disabled(store.currentCue == nil)
+            Picker(L("Speed"), selection: Binding(get: { store.book?.audioRate ?? 1 }, set: { store.setAudioRate($0) })) { ForEach([Float(0.75), 1, 1.25, 1.5, 2], id: \.self) { rate in Text(String(format: "%.2g×", rate)).tag(rate) } }.frame(width: 130)
             Stepper("Delay \(String(format: "%.1f", store.book?.audioDelay ?? 0))s", value: Binding(get: { store.book?.audioDelay ?? 0 }, set: { value in store.mutateBook { $0.audioDelay = value } }), in: -30...30, step: 0.5).font(.caption).frame(width: 130)
         }.buttonStyle(.borderless).padding(12).background(Color(nsColor: .controlBackgroundColor))
     }

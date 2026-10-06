@@ -4,6 +4,8 @@ A local-first EPUB reader for the browser. Import books into this browser, or li
 
 ## Native macOS beta
 
+The native macOS 0.1.0-beta.5 adds an English / 简体中文 / system interface selector in Settings → Appearance, a Jitendex Japanese–Simplified Chinese community dictionary download page, and continuous vertical scrolling through all dictionary matches with an explicit mining selection.
+
 A separate native SwiftUI/AppKit app now lives in [`macOS/`](macOS/README.md), with Hoshi-style offline Yomitan lookup, exact character scanning and persistent matched-text highlighting, EPUB reading, AnkiConnect, vocabulary, statistics, audiobook/SRT support, and ッツ exchange/sync. See the [feature comparison and beta limits](macOS/FEATURES.md). Build with `macOS/scripts/package-app.sh release`, or open the generated `macOS/dist/SimpleReader.app`.
 
 Version history and validation are recorded in [CHANGELOG.md](CHANGELOG.md). GitHub Actions checks the browser build/tests and the native macOS tests/package.
