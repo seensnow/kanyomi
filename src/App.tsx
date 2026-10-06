@@ -302,7 +302,7 @@ function App() {
     <div className={`app-shell ${theme === 'dark' ? 'app-dark' : ''}`}>
       <header className="top-bar">
         <button className="brand" onClick={() => setReaderBook(null)}>
-          <span className="brand-mark" aria-hidden="true"><img src="/brand-mark.svg" alt="" /></span>
+          <span className="brand-mark" aria-hidden="true"><img src="/brand-mark.png" alt="" /></span>
           <span>簡読み</span>
         </button>
         <button

@@ -10,7 +10,7 @@ extension Bundle {
 
 enum BrandMark {
     static let image: NSImage = {
-        guard let url = Bundle.readerResources.url(forResource: "BrandMark", withExtension: "pdf", subdirectory: "Resources"),
+        guard let url = Bundle.readerResources.url(forResource: "BrandMark", withExtension: "png", subdirectory: "Resources"),
               let image = NSImage(contentsOf: url) else { return NSImage() }
         image.isTemplate = true
         return image

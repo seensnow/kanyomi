@@ -76,6 +76,7 @@ button {
 .brand-mark img {
   width: 27px;
   height: 27px;
+  object-fit: contain;
 }
 
 .global-theme-button {

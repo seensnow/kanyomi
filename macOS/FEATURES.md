@@ -34,4 +34,4 @@ Brand mark: Japanese kanji 「簡」 in the macOS icon/sidebar and web brand/fav
 
 Compatibility: legacy SimpleReader data folders, storage keys, bundle identifier and Keychain identifiers are retained to preserve existing libraries and settings. The GitHub repository URL remains unchanged.
 
-The 「簡」 logo uses outlined Yuji Syuku brush lettering consistently across native and web surfaces. Hoshi’s SVG does not identify its original font, so an exact font match is not claimed; font attribution is in macOS/THIRD_PARTY.md.
+The 「簡」 logo uses the user-supplied 趙孟頫 calligraphy PNG across the native icon/sidebar and web brand/favicon. Its original pixels, transparency and proportions are preserved; no installed font is required.

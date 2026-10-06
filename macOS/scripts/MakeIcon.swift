@@ -6,10 +6,12 @@ let image = NSImage(size: NSSize(width: 1024, height: 1024))
 image.lockFocus()
 NSColor(calibratedRed: 0.91, green: 0.87, blue: 0.77, alpha: 1).setFill()
 NSBezierPath(roundedRect: NSRect(x: 32, y: 32, width: 960, height: 960), xRadius: 215, yRadius: 215).fill()
-// Draw the same outlined brush glyph used in the sidebar and web brand.
+// Preserve the supplied calligraphy image’s proportions and transparent background.
 let markURL = URL(fileURLWithPath: CommandLine.arguments[2])
 guard let mark = NSImage(contentsOf: markURL) else { fatalError("Missing brand mark: \(markURL.path)") }
-mark.draw(in: NSRect(x: 192, y: 192, width: 640, height: 640))
+let markScale = min(640 / mark.size.width, 640 / mark.size.height)
+let markSize = NSSize(width: mark.size.width * markScale, height: mark.size.height * markScale)
+mark.draw(in: NSRect(x: (1024 - markSize.width) / 2, y: (1024 - markSize.height) / 2, width: markSize.width, height: markSize.height))
 image.unlockFocus()
 for size in [16,32,128,256,512] {
     for scale in [1,2] {
