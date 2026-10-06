@@ -37,3 +37,5 @@ Open the local URL printed by Vite. For a production build, run `npm run build` 
 - English online lookup and Japanese online fallback require a network connection. Imported Japanese dictionaries work offline.
 - Reading position uses the EPUB's CFI. If a book is replaced with a substantially different file, its old position may no longer resolve; the reader falls back to the beginning.
 - Data stays in one browser profile. There is no account or cross-device sync in this beta.
+
+The macOS beta 6 AnkiConnect path has also been tested live: dictionary-search note creation with localized front/back fields, correct definition content, duplicate prevention and persistence after Anki restart. Audio/media upload and Lapis were not covered by that live check.

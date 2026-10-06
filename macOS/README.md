@@ -61,3 +61,5 @@ open dist/SimpleReader.app
 The build script uses writable local caches and an isolated copy of the SwiftPM manifest interface. This also works around an installed Command Line Tools mismatch (old private Swift 5 interface with the newer Swift 6 library) and explicitly points C++ at the SDK's libc++ headers. It does not alter the system tools.
 
 See `FEATURES.md` for scope, verification and remaining differences. Source and third-party licenses are included with the beta package. Hoshi Reader is not affiliated with this application.
+
+Live beta 6 Anki check: adding a dictionary-search word through the app succeeded with the localized Basic note type and correctly mapped front/back fields. Definition content, duplicate prevention and persistence after Anki restart were verified. Select an existing deck, note type and exact field names in Settings → Anki; English defaults may differ from localized Anki names. Audio/media and book-context mining were not included in this live check.

@@ -2,6 +2,8 @@
 
 ## macOS 0.1.0-beta.6 — 2026-10-06
 
+- Live AnkiConnect validation: the packaged app added a dictionary-search word to a dedicated test deck using localized Basic note fields. Verify term/reading, Jitendex definitions/examples/source, tags and rendered card HTML; duplicate retry is rejected with no extra note, and the note survives an Anki restart. Audio/media upload and book-context mining remain outside this live check.
+
 - Adopt compact Hoshi-inspired dictionary typography: inline wrapping synonyms separated by `|`, smaller match/mining controls, quieter source headings and compact examples. Keep continuous vertical scrolling and ruby.
 - Group each dictionary’s entries under one collapsible source heading with numbered rows. Display imported definition/term tags, including JMnedict name categories; preserve original glossary indices for mining.
 - Validation: 22 native tests pass, including source grouping, tag escaping, compact synonym layout at 320 px in light/dark themes, and existing scroll/selection regression coverage. Release packaging and signature verification pass; packaged beta 6 was checked with installed Jitendex/JMnedict 学 entries, confirming inline synonyms and one source heading for all six name rows. Apple Silicon app remains ad-hoc signed, not notarized.
