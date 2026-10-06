@@ -11,6 +11,7 @@ enum AppLanguage {
         return language.hasPrefix("zh") && !language.hasPrefix("zh-Hant") && !language.hasPrefix("zh-TW") && !language.hasPrefix("zh-HK") ? (simplifiedChinese[key] ?? key) : key
     }
     static let simplifiedChinese: [String: String] = [
+        "Bookshelves": "书架",
         "%d books · A little Japanese, every day.": "%d 本书 · 每天读一点日语。",
         "%d saved · %d sent to Anki": "已保存 %d 个 · 已发送 %d 个到 Anki",
         "Daily reading goal: %d minutes": "每日阅读目标：%d 分钟",

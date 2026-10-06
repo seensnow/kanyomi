@@ -19,7 +19,7 @@ struct MainView: View {
                     Label(L("Vocabulary"), systemImage: "tray.full").tag("Vocabulary")
                     Label(L("Statistics"), systemImage: "chart.bar.xaxis").tag("Statistics")
                     Label(L("Sync & Backup"), systemImage: "arrow.triangle.2.circlepath").tag("Sync")
-                    Section("Bookshelves") {
+                    Section(L("Bookshelves")) {
                         Button { store.selectedShelf = ""; store.section = "Library"; store.closeBook() } label: { Label(L("All books"), systemImage: "square.grid.2x2") }.buttonStyle(.plain)
                         ForEach(store.state.shelves, id: \.self) { shelf in
                             Button { store.selectedShelf = shelf; store.section = "Library"; store.closeBook() } label: { Label(shelf, systemImage: "folder") }.buttonStyle(.plain)
