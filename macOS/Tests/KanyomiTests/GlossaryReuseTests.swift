@@ -1,6 +1,6 @@
 import Testing
 import WebKit
-@testable import SimpleReader
+@testable import Kanyomi
 
 @MainActor struct GlossaryReuseTests {
     @Test func newEntriesReuseDocumentAndKeepLatestPendingResult() async throws {

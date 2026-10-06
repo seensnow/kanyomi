@@ -2,7 +2,7 @@ import SwiftUI
 import AppKit
 
 @main
-struct SimpleReaderApp: App {
+struct KanyomiApp: App {
     @StateObject private var store = ReaderStore()
     @AppStorage("interfaceLanguage") private var language = "system"
     var body: some Scene {

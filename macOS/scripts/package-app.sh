@@ -4,15 +4,15 @@ TASK_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TASK_CONFIGURATION="${1:-release}"
 "$TASK_ROOT/scripts/swift-build.sh" build -c "$TASK_CONFIGURATION"
 TASK_BINARY="$TASK_ROOT/.build/arm64-apple-macosx/$TASK_CONFIGURATION"
-if [ ! -f "$TASK_BINARY/SimpleReader" ]; then TASK_BINARY="$TASK_ROOT/.build/x86_64-apple-macosx/$TASK_CONFIGURATION"; fi
-TASK_APP="$TASK_ROOT/dist/SimpleReader.app"
+if [ ! -f "$TASK_BINARY/Kanyomi" ]; then TASK_BINARY="$TASK_ROOT/.build/x86_64-apple-macosx/$TASK_CONFIGURATION"; fi
+TASK_APP="$TASK_ROOT/dist/簡読み.app"
 rm -rf "$TASK_APP"
 mkdir -p "$TASK_APP/Contents/MacOS" "$TASK_APP/Contents/Resources"
-cp "$TASK_BINARY/SimpleReader" "$TASK_APP/Contents/MacOS/"
+cp "$TASK_BINARY/Kanyomi" "$TASK_APP/Contents/MacOS/"
 # SwiftPM resolves Bundle.module beside Bundle.main.bundleURL.
-cp -R "$TASK_BINARY/SimpleReaderMac_SimpleReader.bundle" "$TASK_APP/Contents/Resources/"
+cp -R "$TASK_BINARY/KanyomiMac_Kanyomi.bundle" "$TASK_APP/Contents/Resources/"
 cp "$TASK_ROOT/LICENSE" "$TASK_ROOT/THIRD_PARTY.md" "$TASK_APP/Contents/Resources/"
-if [ ! -f "$TASK_ROOT/.build/AppIcon.icns" ]; then
+if [ ! -f "$TASK_ROOT/.build/AppIcon.icns" ] || [ "$TASK_ROOT/scripts/MakeIcon.swift" -nt "$TASK_ROOT/.build/AppIcon.icns" ]; then
     swift -vfsoverlay "$TASK_ROOT/.build/tooling/toolchain-overlay.json" -module-cache-path "$TASK_ROOT/.build/tooling/swift" "$TASK_ROOT/scripts/MakeIcon.swift" "$TASK_ROOT/.build/AppIcon.iconset"
     python3 - "$TASK_ROOT/.build" <<'PY_ICON'
 from pathlib import Path
@@ -28,13 +28,13 @@ cat > "$TASK_APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-<key>CFBundleExecutable</key><string>SimpleReader</string>
+<key>CFBundleExecutable</key><string>Kanyomi</string>
 <key>CFBundleIdentifier</key><string>local.simplereader.macos</string>
-<key>CFBundleName</key><string>SimpleReader</string>
-<key>CFBundleDisplayName</key><string>SimpleReader</string>
+<key>CFBundleName</key><string>簡読み</string>
+<key>CFBundleDisplayName</key><string>簡読み</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>0.1.0-beta.6</string>
-<key>CFBundleVersion</key><string>6</string>
+<key>CFBundleShortVersionString</key><string>0.1.0-beta.7</string>
+<key>CFBundleVersion</key><string>7</string>
 <key>CFBundleIconFile</key><string>AppIcon</string>
 <key>LSMinimumSystemVersion</key><string>14.0</string>
 <key>NSHighResolutionCapable</key><true/>
@@ -43,17 +43,20 @@ cat > "$TASK_APP/Contents/Info.plist" <<'PLIST'
 </dict></plist>
 PLIST
 codesign --force --deep --sign - "$TASK_APP"
+# Retire only generated packages from the previous product name.
+rm -rf "$TASK_ROOT/dist/SimpleReader.app" "$TASK_ROOT/dist/簡単.app"
+rm -f "$TASK_ROOT/dist/SimpleReader-macOS-beta.zip" "$TASK_ROOT/dist/Kantan-macOS-beta.zip"
 # Include source and licenses alongside the binary for the GPL beta distribution.
 # Stage the distributable in a temporary folder. Only one app remains in dist,
 # so Launch Services and Finder cannot confuse it with a second identical copy.
-TASK_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/SimpleReader-package.XXXXXX")"
+TASK_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/Kanyomi-package.XXXXXX")"
 trap 'rm -rf "$TASK_STAGE"' EXIT
-TASK_EXPORT="$TASK_STAGE/SimpleReader-macOS-beta"
+TASK_EXPORT="$TASK_STAGE/Kanyomi-macOS-beta"
 mkdir -p "$TASK_EXPORT"
 cp -R "$TASK_APP" "$TASK_EXPORT/"
 cp "$TASK_ROOT/README.md" "$TASK_ROOT/FEATURES.md" "$TASK_ROOT/LICENSE" "$TASK_ROOT/THIRD_PARTY.md" "$TASK_EXPORT/"
 tar -czf "$TASK_EXPORT/Source.tar.gz" -C "$TASK_ROOT" Package.swift Sources Tests Vendor scripts README.md FEATURES.md LICENSE THIRD_PARTY.md
-ditto -c -k --keepParent "$TASK_EXPORT" "$TASK_ROOT/dist/SimpleReader-macOS-beta.zip"
+ditto -c -k --keepParent "$TASK_EXPORT" "$TASK_ROOT/dist/Kanyomi-macOS-beta.zip"
 # Remove the generated staging directory used by older versions of this script.
-rm -rf "$TASK_ROOT/dist/SimpleReader-macOS-beta"
+rm -rf "$TASK_ROOT/dist/Kanyomi-macOS-beta"
 printf 'App: %s\n' "$TASK_APP"

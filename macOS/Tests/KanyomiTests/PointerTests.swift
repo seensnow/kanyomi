@@ -1,7 +1,7 @@
 import Testing
 import AppKit
 import WebKit
-@testable import SimpleReader
+@testable import Kanyomi
 
 @MainActor
 struct PointerTests {

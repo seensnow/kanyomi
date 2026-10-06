@@ -31,5 +31,5 @@ jobs:
         run: ./macOS/scripts/package-app.sh release
       - uses: actions/upload-artifact@v4
         with:
-          name: SimpleReader-macOS-beta
-          path: macOS/dist/SimpleReader-macOS-beta.zip
+          name: Kanyomi-macOS-beta
+          path: macOS/dist/Kanyomi-macOS-beta.zip

@@ -68,8 +68,11 @@ button {
   width: 36px;
   height: 36px;
   place-items: center;
-  color: white;
-  background: linear-gradient(145deg, #4f93ff, #7867ea);
+  color: #4d6657;
+  background: #e8dec4;
+  font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+  font-size: 27px;
+  font-weight: 400;
   border-radius: 11px;
 }
 

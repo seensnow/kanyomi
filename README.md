@@ -1,12 +1,14 @@
-# SimpleReader beta
+# 簡読み (Kanyomi) beta
+
+The app mark is the Japanese kanji **簡**. The display name is **簡読み**, and the internal project name is **Kanyomi**.
 
 A local-first EPUB reader for the browser. Import books into this browser, or link an EPUB folder where the File System Access API is supported. Books and imported dictionaries are stored in IndexedDB; appearance and Anki settings are stored in localStorage.
 
 ## Native macOS beta
 
-The native macOS 0.1.0-beta.6 adds compact Hoshi-inspired dictionary layouts with grouped sources, inline synonyms and name-type tags, alongside an English / 简体中文 / system interface selector in Settings → Appearance and continuous vertical scrolling through all dictionary matches with an explicit mining selection. Dictionary and Settings also link to the official Shogakukan Japanese–Chinese product and Monokakido app download pages; that paid app content is separate from Yomitan ZIP import.
+The native macOS 0.1.0-beta.7 adds compact Hoshi-inspired dictionary layouts with grouped sources, inline synonyms and name-type tags, alongside an English / 简体中文 / system interface selector in Settings → Appearance and continuous vertical scrolling through all dictionary matches with an explicit mining selection. Dictionary and Settings also link to the official Shogakukan Japanese–Chinese product and Monokakido app download pages; that paid app content is separate from Yomitan ZIP import.
 
-A separate native SwiftUI/AppKit app now lives in [`macOS/`](macOS/README.md), with Hoshi-style offline Yomitan lookup, exact character scanning and persistent matched-text highlighting, EPUB reading, AnkiConnect, vocabulary, statistics, audiobook/SRT support, and ッツ exchange/sync. See the [feature comparison and beta limits](macOS/FEATURES.md). Build with `macOS/scripts/package-app.sh release`, or open the generated `macOS/dist/SimpleReader.app`.
+A separate native SwiftUI/AppKit app now lives in [`macOS/`](macOS/README.md), with Hoshi-style offline Yomitan lookup, exact character scanning and persistent matched-text highlighting, EPUB reading, AnkiConnect, vocabulary, statistics, audiobook/SRT support, and ッツ exchange/sync. See the [feature comparison and beta limits](macOS/FEATURES.md). Build with `macOS/scripts/package-app.sh release`, or open the generated `macOS/dist/簡読み.app`.
 
 Version history and validation are recorded in [CHANGELOG.md](CHANGELOG.md). GitHub Actions checks the browser build/tests and the native macOS tests/package.
 
@@ -39,3 +41,5 @@ Open the local URL printed by Vite. For a production build, run `npm run build` 
 - Data stays in one browser profile. There is no account or cross-device sync in this beta.
 
 The macOS beta 6 AnkiConnect path has also been tested live: dictionary-search note creation with localized front/back fields, correct definition content, duplicate prevention and persistence after Anki restart. Audio/media upload and Lapis were not covered by that live check.
+
+Compatibility: legacy SimpleReader data folders, storage keys, bundle identifier and Keychain identifiers are retained to preserve existing libraries and settings. The GitHub repository URL remains unchanged.

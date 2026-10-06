@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 import WebKit
-@testable import SimpleReader
+@testable import Kanyomi
 
 struct GlossaryTests {
     static var content: [String: Any] {

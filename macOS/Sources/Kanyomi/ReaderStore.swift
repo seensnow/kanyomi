@@ -59,7 +59,7 @@ final class ReaderStore: ObservableObject {
         state.books.filter { (selectedShelf.isEmpty || $0.shelf == selectedShelf) && (librarySearch.isEmpty || ($0.title + $0.author).localizedCaseInsensitiveContains(librarySearch)) }.sorted { sortByTitle ? $0.title.localizedStandardCompare($1.title) == .orderedAscending : $0.lastOpened > $1.lastOpened }
     }
     init(root: URL? = nil, startTimer: Bool = true) {
-        let override = ProcessInfo.processInfo.environment["SIMPLEREADER_DATA_DIR"]
+        let override = ProcessInfo.processInfo.environment["KANYOMI_DATA_DIR"] ?? ProcessInfo.processInfo.environment["SIMPLEREADER_DATA_DIR"]
         self.rootURL = (root ?? override.map { URL(fileURLWithPath: $0) } ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("SimpleReaderMac")).standardizedFileURL
         do {
             try FileManager.default.createDirectory(at: self.root, withIntermediateDirectories: true)
@@ -297,7 +297,7 @@ final class ReaderStore: ObservableObject {
         }
     }
     func exportVocabulary() {
-        let panel = NSSavePanel(); panel.nameFieldStringValue = "SimpleReader-vocabulary.tsv"
+        let panel = NSSavePanel(); panel.nameFieldStringValue = "Kanyomi-vocabulary.tsv"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         func cell(_ s: String) -> String { s.replacingOccurrences(of: "\t", with: " ").replacingOccurrences(of: "\n", with: "<br>").replacingOccurrences(of: "\r", with: "") }
         let text = "Expression\tReading\tSentence\tDefinition\tBook\n" + state.words.map { [$0.expression, $0.reading, $0.sentence, $0.definition, $0.book].map(cell).joined(separator: "\t") }.joined(separator: "\n")
@@ -329,7 +329,7 @@ final class ReaderStore: ObservableObject {
     func setAudioRate(_ rate: Float) { mutateBook { $0.audioRate = rate }; if playingAudio { player?.rate = rate } }
     func replayCue() { if let cue = currentCue { seekAudio(cue.start); if !playingAudio { toggleAudiobook() } } }
     func backup() {
-        let panel = NSSavePanel(); panel.nameFieldStringValue = "SimpleReader-backup.zip"; panel.allowedContentTypes = [.zip]
+        let panel = NSSavePanel(); panel.nameFieldStringValue = "Kanyomi-backup.zip"; panel.allowedContentTypes = [.zip]
         guard panel.runModal() == .OK, let url = panel.url else { return }; save()
         run("Creating backup…") { [self] in let root = root; try await Task.detached { try FileManager.default.zipItem(at: root, to: url, shouldKeepParent: false) }.value; message = "Backup saved" }
     }
@@ -339,14 +339,14 @@ final class ReaderStore: ObservableObject {
         let alert = NSAlert(); alert.messageText = "Restore library from backup?"; alert.informativeText = "The current library will be replaced. A recovery copy is kept beside the library folder."; alert.addButton(withTitle: "Restore"); alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         run("Restoring backup…") { [self] in
-            let staging = root.deletingLastPathComponent().appendingPathComponent("SimpleReaderRestore-\(UUID())")
+            let staging = root.deletingLastPathComponent().appendingPathComponent("KanyomiRestore-\(UUID())")
             defer { try? FileManager.default.removeItem(at: staging) }
             try EPUBImporter.extract(url, to: staging)
             let decoded = try JSONDecoder().decode(LibraryState.self, from: Data(contentsOf: staging.appendingPathComponent("library.json")))
             try Self.validateBackup(decoded, root: staging)
             saveWork?.cancel(); closeBook(); saveWork?.cancel()
             await engine.rebuild([], root: root)
-            let old = root.deletingLastPathComponent().appendingPathComponent("SimpleReaderRecovery-\(UUID())")
+            let old = root.deletingLastPathComponent().appendingPathComponent("KanyomiRecovery-\(UUID())")
             try FileManager.default.moveItem(at: root, to: old)
             do { try FileManager.default.moveItem(at: staging, to: root) } catch { try? FileManager.default.moveItem(at: old, to: root); throw error }
             state = decoded; await rebuildDictionaries(); save(); message = "Backup restored"

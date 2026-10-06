@@ -1,12 +1,12 @@
 import Testing
 import AppKit
 import WebKit
-@testable import SimpleReader
+@testable import Kanyomi
 
 @MainActor
 struct IllustrationTests {
     @Test func imageOnlyXHTMLRendersInBothWritingModes() async throws {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent("SimpleReaderIllustration-\(UUID())")
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("KanyomiIllustration-\(UUID())")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
         let picture = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400\" height=\"600\"><rect width=\"400\" height=\"600\" fill=\"red\"/></svg>"

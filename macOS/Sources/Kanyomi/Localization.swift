@@ -177,7 +177,7 @@ enum AppLanguage {
         "Setup guide": "设置指南",
         "Show local library folder": "打开本地书库文件夹",
         "Show ruby readings": "显示注音",
-        "SimpleReader for macOS": "SimpleReader macOS 版",
+        "簡読み for macOS": "簡読み macOS 版",
         "Size": "字号",
         "Sort": "排序",
         "Source type": "音源类型",

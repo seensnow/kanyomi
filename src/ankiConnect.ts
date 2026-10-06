@@ -91,7 +91,7 @@ export async function addWordToAnki(
         [settings.definitionField]: back,
       },
       options: { allowDuplicate: false },
-      tags: ['simple-reader'],
+      tags: ['kanyomi'],
     },
   })
 }

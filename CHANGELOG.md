@@ -1,5 +1,10 @@
 # Changelog
 
+## macOS 0.1.0-beta.7 — 2026-10-07
+
+- Replace the macOS app icon/sidebar mark and web brand/favicon with the requested Japanese kanji 「簡」. Use a Japanese system typeface for the native icon and rebuild cached icons when their generator changes. Rename the display name to 「簡読み」 and internal Swift/npm targets to Kanyomi, including packaging, exports and CI artifacts. Keep legacy data directories, storage keys, bundle identifier and Keychain service so existing libraries and settings remain accessible. Add KANYOMI_DATA_DIR with the old environment variable as a fallback.
+- Validation: web lint, three tests and production build pass (existing large-chunk warning); 22 native tests pass under the renamed module. The generated 512 px icon was visually checked. macOS release packaging and signature verification pass; packaged beta 7 retains the existing book, installed Jitendex/JMnedict dictionaries, Chinese interface selection and working 学 lookup.
+
 ## macOS 0.1.0-beta.6 — 2026-10-06
 
 - Live AnkiConnect validation: the packaged app added a dictionary-search word to a dedicated test deck using localized Basic note fields. Verify term/reading, Jitendex definitions/examples/source, tags and rendered card HTML; duplicate retry is rejected with no extra note, and the note survives an Anki restart. Audio/media upload and book-context mining remain outside this live check.

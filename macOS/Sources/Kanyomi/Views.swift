@@ -12,7 +12,7 @@ struct MainView: View {
         let _ = interfaceLocale
         NavigationSplitView {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 10) { Image(systemName: "sparkle").font(.title).foregroundStyle(accent); VStack(alignment: .leading) { Text("SimpleReader").font(.headline); Text("macOS · beta 6").font(.caption).foregroundStyle(.secondary) } }.padding(20)
+                HStack(spacing: 10) { Text("簡").font(.custom("HiraginoSans-W3", size: 28)).foregroundStyle(accent).accessibilityHidden(true); VStack(alignment: .leading) { Text("簡読み").font(.headline); Text("macOS · beta 7").font(.caption).foregroundStyle(.secondary) } }.padding(20)
                 List(selection: $store.section) {
                     Label(L("Library"), systemImage: "books.vertical").tag("Library")
                     Label(L("Dictionary"), systemImage: "character.book.closed").tag("Dictionary")
@@ -52,7 +52,7 @@ struct MainView: View {
             if let busy = store.busy { HStack { ProgressView().controlSize(.small); Text(busy) }.padding(12).background(.regularMaterial, in: Capsule()).padding(18) }
             else if let message = store.message { Text(message).padding(12).background(.regularMaterial, in: Capsule()).padding(18).onAppear { DispatchQueue.main.asyncAfter(deadline: .now() + 4) { if store.message == message { store.message = nil } } }.id(message) }
         }
-        .alert("SimpleReader", isPresented: Binding(get: { store.error != nil }, set: { if !$0 { store.error = nil } })) { Button(L("OK")) { store.error = nil } } message: { Text(store.error ?? "") }
+        .alert("簡読み", isPresented: Binding(get: { store.error != nil }, set: { if !$0 { store.error = nil } })) { Button(L("OK")) { store.error = nil } } message: { Text(store.error ?? "") }
         .alert(L("New Bookshelf"), isPresented: $addingShelf) { TextField(L("Name"), text: $shelfName); Button(L("Create")) { let name = shelfName.trimmingCharacters(in: .whitespacesAndNewlines); if !name.isEmpty && !store.state.shelves.contains(name) { store.state.shelves.append(name); store.saveSoon() }; shelfName = "" }; Button(L("Cancel"), role: .cancel) {} }
         .onChange(of: store.section) { _, value in if value != "Library" { store.closeBook() } }
     }

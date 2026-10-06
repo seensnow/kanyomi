@@ -1,12 +1,12 @@
 import Testing
 import Foundation
 import ZIPFoundation
-@testable import SimpleReader
+@testable import Kanyomi
 
 @Suite(.serialized)
 final class ReaderTests {
     var root: URL!
-    init() throws { root = FileManager.default.temporaryDirectory.appendingPathComponent("SimpleReaderTests-\(UUID())"); try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true) }
+    init() throws { root = FileManager.default.temporaryDirectory.appendingPathComponent("KanyomiTests-\(UUID())"); try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true) }
     deinit { try? FileManager.default.removeItem(at: root) }
     func sample(_ name: String, ext: String) -> URL { Bundle.module.url(forResource: name, withExtension: ext, subdirectory: "Resources")! }
     @Test func testEPUB3RubyNavigationAndAssets() throws {
@@ -37,7 +37,7 @@ final class ReaderTests {
         XCTAssertThrowsError(try EPUBImporter.extract(zip, to: root.appendingPathComponent("extract")))
     }
     @Test func testPrivateTmpAliasImport() throws {
-        let alias = URL(fileURLWithPath: "/private/tmp/SimpleReaderAlias-\(UUID())")
+        let alias = URL(fileURLWithPath: "/private/tmp/KanyomiAlias-\(UUID())")
         defer { try? FileManager.default.removeItem(at: alias) }
         let book = try EPUBImporter.load(sample("Sample", ext: "epub"), root: alias)
         XCTAssertEqual(book.chapters.count, 2)

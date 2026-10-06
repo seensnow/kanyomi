@@ -119,7 +119,7 @@ struct Preferences: Codable, Equatable {
     var ankiKey = ""
     var ankiDeck = "Default"
     var ankiModel = "Basic"
-    var ankiTags = "SimpleReader Japanese"
+    var ankiTags = "Kanyomi Japanese"
     var allowDuplicates = false
     var mappings = [FieldMapping(field: "Front", template: "{expression}<br>{reading}<br>{sentence}"), FieldMapping(field: "Back", template: "{glossary}")]
     var audioURL = "https://assets.languagepod101.com/dictionary/japanese/audiomp3.php?kanji={term}&kana={reading}"
