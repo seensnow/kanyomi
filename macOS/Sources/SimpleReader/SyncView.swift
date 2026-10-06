@@ -2,6 +2,7 @@ import SwiftUI
 import AppKit
 
 struct SyncView: View {
+    @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     @StateObject private var auth = GoogleAuthorization()
     @State private var selectedLocal: UUID?
@@ -11,6 +12,7 @@ struct SyncView: View {
     @State private var includeStatistics = true
     @State private var includeAudio = true
     var body: some View {
+        let _ = interfaceLocale
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 Text(L("Keep your place.")).font(.system(size: 32, design: .serif))

@@ -2,8 +2,10 @@ import SwiftUI
 import AppKit
 
 struct AppearanceControls: View {
+    @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     var body: some View {
+        let _ = interfaceLocale
         VStack(alignment: .leading, spacing: 18) {
             Text(L("Reading appearance")).font(.headline)
             Toggle(L("Vertical Japanese text"), isOn: Binding(get: { store.preferences.vertical }, set: { store.preferences.vertical = $0 }))
@@ -17,9 +19,11 @@ struct AppearanceControls: View {
     }
 }
 struct PreferencesView: View {
+    @Environment(\.locale) private var interfaceLocale
     @AppStorage("interfaceLanguage") private var language = "system"
     @EnvironmentObject var store: ReaderStore
     var body: some View {
+        let _ = interfaceLocale
         TabView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {

@@ -4,10 +4,12 @@ import Charts
 
 private let accent = Color(red: 0.66, green: 0.36, blue: 0.25)
 struct MainView: View {
+    @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     @State private var shelfName = ""
     @State private var addingShelf = false
     var body: some View {
+        let _ = interfaceLocale
         NavigationSplitView {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 10) { Image(systemName: "sparkle").font(.title).foregroundStyle(accent); VStack(alignment: .leading) { Text("SimpleReader").font(.headline); Text("macOS · beta 5").font(.caption).foregroundStyle(.secondary) } }.padding(20)
@@ -56,8 +58,10 @@ struct MainView: View {
     }
 }
 struct LibraryView: View {
+    @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     var body: some View {
+        let _ = interfaceLocale
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline) { VStack(alignment: .leading, spacing: 8) { Text(store.selectedShelf.isEmpty ? L("Your reading room") : store.selectedShelf).font(.system(size: 32, weight: .medium, design: .serif)); Text(L("%d books · A little Japanese, every day.", store.filteredBooks.count)).foregroundStyle(.secondary) }; Spacer(); Button { store.pickBooks() } label: { Label(L("Import EPUB"), systemImage: "plus") }.buttonStyle(.borderedProminent).disabled(store.busy != nil) }.padding(30)
             HStack { Image(systemName: "magnifyingglass").foregroundStyle(.secondary); TextField(L("Search title or author"), text: $store.librarySearch).textFieldStyle(.plain); Spacer(); Picker(L("Sort"), selection: $store.sortByTitle) { Text(L("Recently read")).tag(false); Text(L("Title")).tag(true) }.frame(width: 190) }.padding(.horizontal, 30).padding(.bottom, 20)
@@ -78,9 +82,11 @@ struct LibraryView: View {
     }
 }
 struct BookTile: View {
+    @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     let book: Book
     var body: some View {
+        let _ = interfaceLocale
         Button { store.openBook(book.id) } label: {
             VStack(alignment: .leading, spacing: 10) {
                 ZStack {
@@ -108,6 +114,7 @@ struct BookTile: View {
     func setShelf(_ value: String) { if let i = store.state.books.firstIndex(where: { $0.id == book.id }) { store.state.books[i].shelf = value; store.saveSoon() } }
 }
 struct ReadingView: View {
+    @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     let book: Book
     @State private var showContents = false
@@ -116,6 +123,7 @@ struct ReadingView: View {
     @State private var tab = "Contents"
     @State private var bookSearch = ""
     var body: some View {
+        let _ = interfaceLocale
         VStack(spacing: 0) {
             HStack(spacing: 16) {
                 Button { store.closeBook() } label: { Image(systemName: "chevron.left") }.help(L("Back to library"))
@@ -178,10 +186,12 @@ struct ReadingView: View {
     }
 }
 struct DictionaryPanel: View {
+    @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     @Environment(\.colorScheme) private var colorScheme
     @State private var query = ""
     var body: some View {
+        let _ = interfaceLocale
         VStack(alignment: .leading, spacing: 0) {
             HStack { Image(systemName: "magnifyingglass").foregroundStyle(.secondary); TextField(L("Look up Japanese"), text: $query).textFieldStyle(.plain).onSubmit { store.lookup(query) } }.padding(16)
             Divider()
@@ -235,8 +245,10 @@ struct DictionaryPanel: View {
     }
 }
 struct DictionaryPage: View {
+    @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     var body: some View {
+        let _ = interfaceLocale
         GeometryReader { geometry in
             HStack(spacing: 0) {
                 ScrollView {
@@ -256,8 +268,10 @@ struct DictionaryPage: View {
     }
 }
 struct DictionaryDownloads: View {
+    @Environment(\.locale) private var interfaceLocale
     @State private var expanded = true
     var body: some View {
+        let _ = interfaceLocale
         DisclosureGroup(L("Recommended dictionaries · Download"), isExpanded: $expanded) {
             VStack(alignment: .leading, spacing: 10) {
                 download("Jitendex", detail: "Japanese–English definitions and examples · Start here", url: "https://github.com/stephenmk/stephenmk.github.io/releases/latest/download/jitendex-yomitan.zip")
@@ -280,8 +294,10 @@ struct DictionaryDownloads: View {
     }
 }
 struct DictionaryList: View {
+    @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     var body: some View {
+        let _ = interfaceLocale
         List {
             ForEach(Array(store.state.dictionaries.enumerated()), id: \.element.id) { index, d in
                 VStack(alignment: .leading, spacing: 8) {
@@ -295,10 +311,12 @@ struct DictionaryList: View {
     func move(_ index: Int, _ delta: Int) { let next = index + delta; guard store.state.dictionaries.indices.contains(next) else { return }; store.state.dictionaries.swapAt(index, next); store.updateDictionaries() }
 }
 struct VocabularyView: View {
+    @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     @State private var search = ""
     var words: [MinedWord] { store.state.words.reversed().filter { search.isEmpty || ($0.expression + $0.reading + $0.definition).localizedCaseInsensitiveContains(search) } }
     var body: some View {
+        let _ = interfaceLocale
         VStack(alignment: .leading, spacing: 20) {
             HStack { VStack(alignment: .leading, spacing: 7) { Text(L("Words worth keeping")).font(.system(size: 30, design: .serif)); Text(L("%d saved · %d sent to Anki", store.state.words.count, store.state.words.filter { $0.ankiID != nil }.count)).foregroundStyle(.secondary) }; Spacer(); Button(L("Export TSV…")) { store.exportVocabulary() } }
             TextField("Search vocabulary", text: $search).textFieldStyle(.roundedBorder)
@@ -314,6 +332,7 @@ struct VocabularyView: View {
     }
 }
 struct StatisticsView: View {
+    @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     @State private var period = 30
     struct Day: Identifiable { var id: String; var minutes: Double; var characters: Int }
@@ -321,6 +340,7 @@ struct StatisticsView: View {
         (0..<period).reversed().map { i in let date = Calendar.current.date(byAdding: .day, value: -i, to: Date())!; let key = ReaderStore.dateKey(date); let records = store.state.days.filter { $0.date == key }; return Day(id: key, minutes: records.reduce(0) { $0 + $1.seconds } / 60, characters: records.reduce(0) { $0 + $1.characters }) }
     }
     var body: some View {
+        let _ = interfaceLocale
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
                 HStack { Text(L("Every page adds up.")).font(.system(size: 32, design: .serif)); Spacer(); Picker(L("Period"), selection: $period) { Text(L("7 days")).tag(7); Text(L("30 days")).tag(30); Text(L("90 days")).tag(90) }.frame(width: 170) }
@@ -343,8 +363,10 @@ struct StatisticsView: View {
     func metric(_ title: String, _ value: String) -> some View { VStack(alignment: .leading, spacing: 14) { Text(L(title)).font(.caption2).tracking(1).foregroundStyle(.secondary); Text(value).font(.system(size: 28, design: .rounded)) }.frame(maxWidth: .infinity, alignment: .leading).padding(20).background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12)) }
 }
 struct AudiobookBar: View {
+    @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     var body: some View {
+        let _ = interfaceLocale
         HStack(spacing: 14) {
             Button { store.seekAudio(store.audioTime - 10) } label: { Image(systemName: "gobackward.10") }
             Button { store.toggleAudiobook() } label: { Image(systemName: store.playingAudio ? "pause.fill" : "play.fill") }

@@ -7,7 +7,7 @@ struct SimpleReaderApp: App {
     @AppStorage("interfaceLanguage") private var language = "system"
     var body: some Scene {
         WindowGroup {
-            MainView().id(language).environmentObject(store).environment(\.locale, AppLanguage.locale(language)).frame(minWidth: 980, minHeight: 660)
+            MainView().environmentObject(store).environment(\.locale, AppLanguage.locale(language)).frame(minWidth: 980, minHeight: 660)
                 .onOpenURL { store.importBooks([$0]) }
         }
         .defaultSize(width: 1280, height: 840)
