@@ -18,7 +18,7 @@ An independent native Japanese EPUB reader inspired by Hoshi Reader. SwiftUI and
 
 ## Japanese–Chinese dictionaries
 
-The machine-translated Jitendex Chinese download recommendation has been removed. The [publisher-backed Shogakukan Japanese–Chinese dictionary, third edition](https://www.monokakido.jp/ja/dictionaries/cj3/index.html) is available as paid content in [Dictionaries by Monokakido](https://www.monokakido.jp/ja/dictionaries/app/), including on macOS. Its official distribution uses that app; no publisher-authorized Yomitan ZIP compatible with SimpleReader has been verified. Buying its app content does not make it importable here.
+The machine-translated Jitendex Chinese download recommendation has been removed. The [publisher-backed Shogakukan Japanese–Chinese dictionary, third edition](https://www.monokakido.jp/ja/dictionaries/cj3/index.html) is available as paid content in [Dictionaries by Monokakido](https://www.monokakido.jp/ja/dictionaries/app/), including on macOS. Both official pages are linked under “Official Japanese–Chinese dictionaries” in Dictionary and Settings. Its official distribution uses that app; no publisher-authorized Yomitan ZIP compatible with SimpleReader has been verified. Buying its app content does not make it importable here.
 
 ## Open the beta
 

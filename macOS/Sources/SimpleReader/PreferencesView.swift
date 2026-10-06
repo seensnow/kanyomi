@@ -40,7 +40,7 @@ struct PreferencesView: View {
                     Stepper(L("Dictionary scan length: %d", store.preferences.scanLength), value: bind(\.scanLength), in: 1...64)
                 }.padding(24)
             }.tabItem { Label(L("Appearance"), systemImage: "textformat") }
-            VStack(alignment: .leading, spacing: 16) { Text(L("Dictionary order controls definition priority.")).foregroundStyle(.secondary); Button(L("Import Yomitan ZIP…")) { store.pickDictionary() }; DictionaryDownloads(); DictionaryList() }.padding(24).tabItem { Label(L("Dictionaries"), systemImage: "character.book.closed") }
+            ScrollView { VStack(alignment: .leading, spacing: 16) { Text(L("Dictionary order controls definition priority.")).foregroundStyle(.secondary); Button(L("Import Yomitan ZIP…")) { store.pickDictionary() }; DictionaryDownloads(); DictionaryList().frame(height: 260) }.padding(24) }.tabItem { Label(L("Dictionaries"), systemImage: "character.book.closed") }
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     Text("AnkiConnect").font(.title2)

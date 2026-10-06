@@ -282,6 +282,11 @@ struct DictionaryDownloads: View {
                     Link(L("Jitendex website"), destination: URL(string: "https://jitendex.org/pages/downloads.html")!)
                     Link(L("More dictionaries"), destination: URL(string: "https://github.com/yomidevs/jmdict-yomitan")!)
                 }.font(.caption)
+                Divider().padding(.vertical, 4)
+                Text(L("Official Japanese–Chinese dictionaries")).font(.headline)
+                Link(L("Shogakukan Japanese–Chinese · Product page"), destination: URL(string: "https://www.monokakido.jp/ja/dictionaries/cj3/index.html")!)
+                Link(L("Dictionaries by Monokakido · Download app"), destination: URL(string: "https://www.monokakido.jp/ja/dictionaries/app/")!)
+                Text(L("Paid dictionary content for the separate Monokakido app on Mac/iOS. These links do not provide a Yomitan ZIP for import here.")).font(.caption).foregroundStyle(.secondary)
             }.fixedSize(horizontal: false, vertical: true).padding(.top, 8)
         }.fixedSize(horizontal: false, vertical: true)
     }
