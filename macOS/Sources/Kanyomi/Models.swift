@@ -107,7 +107,7 @@ struct Preferences: Codable, Equatable {
     var font = "Hiragino Mincho ProN"
     var fontSize: Double = 24
     var lineHeight: Double = 1.9
-    var theme = "Paper"
+    var theme = "Night"
     var customBackground = "#f5f1e8"
     var customForeground = "#302c28"
     var customCSS = ""
@@ -124,8 +124,8 @@ struct Preferences: Codable, Equatable {
     var mappings = [FieldMapping(field: "Front", template: "{expression}<br>{reading}<br>{sentence}"), FieldMapping(field: "Back", template: "{glossary}")]
     var audioURL = "https://assets.languagepod101.com/dictionary/japanese/audiomp3.php?kanji={term}&kana={reading}"
     var audioSourceType = "Direct audio"
-    var background: String { theme == "Night" ? "#171c24" : theme == "White" ? "#ffffff" : theme == "Custom" ? customBackground : "#f5f1e8" }
-    var foreground: String { theme == "Night" ? "#dedbd4" : theme == "Custom" ? customForeground : "#302c28" }
+    var background: String { theme == "Night" ? "#252525" : theme == "White" ? "#ffffff" : theme == "Custom" ? customBackground : "#f5f1e8" }
+    var foreground: String { theme == "Night" ? "#e8e5e2" : theme == "Custom" ? customForeground : "#302c28" }
 }
 struct LibraryState: Codable {
     var version = 1

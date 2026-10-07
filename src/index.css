@@ -1,7 +1,7 @@
 :root {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #243144;
-  background: #f5f7fb;
+  color: #333333;
+  background: #f3efed;
 }
 
 * {
@@ -29,8 +29,8 @@ button {
 }
 
 .app-dark {
-  color: #e7eaf0;
-  background: #171a20;
+  color: #f3efed;
+  background: #1b1b1b;
 }
 
 .top-bar {
@@ -43,7 +43,7 @@ button {
   height: 72px;
   padding: 0 40px;
   background: rgba(255, 255, 255, 0.96);
-  border-bottom: 1px solid #e3e8f0;
+  border-bottom: 1px solid #f3efed;
   box-shadow: 0 2px 12px rgba(36, 49, 68, 0.06);
 }
 
@@ -58,7 +58,7 @@ button {
 }
 
 .brand {
-  color: #377df6;
+  color: #c77c5c;
   font-size: 20px;
   font-weight: 750;
 }
@@ -68,8 +68,8 @@ button {
   width: 36px;
   height: 36px;
   place-items: center;
-  color: #4d6657;
-  background: #e8dec4;
+  color: #c77c5c;
+  background: #252525;
   border-radius: 11px;
 }
 
@@ -81,10 +81,10 @@ button {
 
 .global-theme-button {
   padding: 9px 14px;
-  color: #285da8;
+  color: #c77c5c;
   font-weight: 700;
-  background: #edf4ff;
-  border: 1px solid #cdddf5;
+  background: #f3efed;
+  border: 1px solid #f3efed;
   border-radius: 9px;
   cursor: pointer;
 }
@@ -95,9 +95,9 @@ button {
 .app-dark .reader-setting-options button,
 .app-dark .dictionary-import-button,
 .app-dark .anki-test-button {
-  color: #d4e2fa;
-  background: #28364c;
-  border-color: #455a78;
+  color: #f3efed;
+  background: #393939;
+  border-color: #645a55;
 }
 
 .app-dark .global-theme-button:hover,
@@ -106,47 +106,47 @@ button {
 .app-dark .reader-setting-options button:hover:not(:disabled),
 .app-dark .dictionary-import-button:hover,
 .app-dark .anki-test-button:hover {
-  background: #344661;
-  border-color: #5e7699;
+  background: #494949;
+  border-color: #a99e98;
 }
 
 .app-dark .top-bar {
-  background: rgba(28, 32, 40, 0.97);
-  border-bottom-color: #373d49;
+  background: rgba(37, 37, 37, 0.97);
+  border-bottom-color: #3f3f3f;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
 
 .app-dark .library-toolbar {
-  border-bottom-color: #373d49;
+  border-bottom-color: #3f3f3f;
 }
 
 .app-dark .library-toolbar h1,
 .app-dark .card-title,
 .app-dark .empty-library h2 {
-  color: #e7eaf0;
+  color: #f3efed;
 }
 
 .app-dark .library-summary,
 .app-dark .compatibility-note,
 .app-dark .card-date,
 .app-dark .empty-library {
-  color: #aab4c3;
+  color: #f6eae4;
 }
 
 .app-dark .library-search {
-  color: #e7eaf0;
-  background: #232832;
-  border-color: #444b59;
+  color: #f3efed;
+  background: #2a2a2a;
+  border-color: #4d4d4d;
 }
 
 .app-dark .book-cover-image {
-  background: #232832;
+  background: #2a2a2a;
 }
 
 .app-dark .empty-book {
-  color: #aab4c3;
-  background: #232832;
-  border-color: #373d49;
+  color: #f6eae4;
+  background: #2a2a2a;
+  border-color: #3f3f3f;
 }
 
 .library-page {
@@ -161,12 +161,12 @@ button {
   justify-content: space-between;
   gap: 32px;
   padding-bottom: 28px;
-  border-bottom: 1px solid #dce2ea;
+  border-bottom: 1px solid #e8e5e2;
 }
 
 .eyebrow {
   margin: 0 0 8px;
-  color: #377df6;
+  color: #c77c5c;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -174,14 +174,14 @@ button {
 
 .library-toolbar h1 {
   margin: 0;
-  color: #1d2939;
+  color: #2a2a2a;
   font-size: clamp(30px, 4vw, 44px);
   line-height: 1.1;
 }
 
 .library-summary {
   margin: 12px 0 0;
-  color: #7b8798;
+  color: #a99e98;
 }
 
 .library-actions {
@@ -194,13 +194,13 @@ button {
   width: 240px;
   padding: 12px 14px;
   background: white;
-  border: 1px solid #d8e0eb;
+  border: 1px solid #e8e5e2;
   border-radius: 12px;
   outline: none;
 }
 
 .library-search:focus {
-  border-color: #5b91ef;
+  border-color: #c77c5c;
   box-shadow: 0 0 0 3px rgba(55, 125, 246, 0.13);
 }
 
@@ -219,12 +219,12 @@ button {
 
 .import-button {
   color: white;
-  background: #ff7a3d;
+  background: #c77c5c;
   box-shadow: 0 8px 20px rgba(255, 122, 61, 0.22);
 }
 
 .import-button:hover {
-  background: #ee672b;
+  background: #b66b4d;
 }
 
 .import-button.is-busy {
@@ -242,25 +242,25 @@ button {
 }
 
 .folder-button {
-  color: #356bc5;
-  background: #eaf2ff;
-  border: 1px solid #c9dcfb;
+  color: #c77c5c;
+  background: #f3efed;
+  border: 1px solid #f3efed;
 }
 
 .folder-button:hover:not(:disabled) {
-  background: #dceaff;
+  background: #f3efed;
 }
 
 .folder-button:disabled {
-  color: #909baa;
-  background: #eef1f5;
-  border-color: #e0e5ec;
+  color: #a99e98;
+  background: #f3efed;
+  border-color: #e8e5e2;
   cursor: not-allowed;
 }
 
 .compatibility-note {
   margin: 18px 0 0;
-  color: #6d7888;
+  color: #645a55;
   font-size: 14px;
 }
 
@@ -301,7 +301,7 @@ button {
 .book-manage-button {
   margin-top: 10px;
   padding: 4px 0;
-  color: #65758b;
+  color: #645a55;
   font-size: 12px;
   background: transparent;
   border: 0;
@@ -314,7 +314,7 @@ button {
 }
 
 .app-dark .book-manage-button {
-  color: #aab4c3;
+  color: #f6eae4;
 }
 
 .book-cover {
@@ -329,7 +329,7 @@ button {
   color: white;
   background:
     radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.3), transparent 26%),
-    linear-gradient(145deg, #3278e8, #6c58d9 62%, #2e3f86);
+    linear-gradient(145deg, #c77c5c, #c77c5c 62%, #645a55);
   border-radius: 5px 14px 14px 5px;
   box-shadow: 0 16px 28px rgba(31, 52, 93, 0.2);
   transition: transform 160ms ease, box-shadow 160ms ease;
@@ -381,7 +381,7 @@ button {
   height: 100%;
   padding: 8px;
   object-fit: contain;
-  background: #edf0f5;
+  background: #f3efed;
 }
 
 .card-title,
@@ -393,7 +393,7 @@ button {
 .card-title {
   margin-top: 16px;
   overflow: hidden;
-  color: #243144;
+  color: #333333;
   font-size: 16px;
   font-weight: 750;
   text-overflow: ellipsis;
@@ -403,7 +403,7 @@ button {
 .card-date {
   margin-top: 6px;
   overflow: hidden;
-  color: #8995a5;
+  color: #a99e98;
   font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -413,16 +413,16 @@ button {
   width: fit-content;
   margin-top: 8px;
   padding: 3px 8px;
-  color: #576578;
+  color: #645a55;
   font-size: 11px;
   font-weight: 750;
-  background: #edf1f6;
+  background: #f3efed;
   border-radius: 999px;
 }
 
 .source-badge.linked {
-  color: #2f69c5;
-  background: #e6f0ff;
+  color: #c77c5c;
+  background: #f3efed;
 }
 
 .empty-library {
@@ -430,13 +430,13 @@ button {
   min-height: 420px;
   place-items: center;
   align-content: center;
-  color: #7b8798;
+  color: #a99e98;
   text-align: center;
 }
 
 .empty-library h2 {
   margin: 22px 0 0;
-  color: #344054;
+  color: #434343;
 }
 
 .empty-library p {
@@ -448,11 +448,11 @@ button {
   width: 120px;
   height: 156px;
   place-items: center;
-  color: #7693b9;
+  color: #a99e98;
   font-size: 14px;
   font-weight: 800;
   background: white;
-  border: 1px solid #dbe2ec;
+  border: 1px solid #e8e5e2;
   border-radius: 3px 9px 9px 3px;
   box-shadow: 0 14px 28px rgba(42, 60, 89, 0.12);
 }
@@ -463,18 +463,18 @@ button {
 }
 
 .reader-dark {
-  color: #e7eaf0;
-  background: #171a20;
+  color: #f3efed;
+  background: #1b1b1b;
 }
 
 .reader-dark .reader-heading h1,
 .reader-dark .reader-hint {
-  color: #e7eaf0;
+  color: #f3efed;
 }
 
 .reader-dark .epub-viewer {
-  background: #20242c;
-  border-color: #373d49;
+  background: #252525;
+  border-color: #3f3f3f;
 }
 
 .reader-content {
@@ -502,17 +502,17 @@ button {
 .chapter-picker {
   max-width: 220px;
   padding: 9px 12px;
-  color: #285da8;
-  background: #edf4ff;
-  border: 1px solid #cdddf5;
+  color: #c77c5c;
+  background: #f3efed;
+  border: 1px solid #f3efed;
   border-radius: 9px;
   cursor: pointer;
 }
 
 .app-dark .chapter-picker {
-  color: #d4e2fa;
-  background: #28364c;
-  border-color: #455a78;
+  color: #f3efed;
+  background: #393939;
+  border-color: #645a55;
 }
 
 .book-open-button:focus-visible,
@@ -520,17 +520,17 @@ button {
 .chapter-picker:focus-visible,
 button:focus-visible,
 input:focus-visible {
-  outline: 3px solid #5b91ef;
+  outline: 3px solid #c77c5c;
   outline-offset: 3px;
 }
 
 .reader-tool-button,
 .anki-test-button {
   padding: 9px 13px;
-  color: #285da8;
+  color: #c77c5c;
   font-weight: 700;
-  background: #edf4ff;
-  border: 1px solid #cdddf5;
+  background: #f3efed;
+  border: 1px solid #f3efed;
   border-radius: 9px;
   cursor: pointer;
 }
@@ -542,16 +542,16 @@ input:focus-visible {
   margin-bottom: 16px;
   padding: 16px 20px;
   background: white;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e8e5e2;
   border-radius: 14px;
   box-shadow: 0 12px 30px rgba(35, 49, 73, 0.08);
 }
 
 .reader-dark .reader-settings-panel,
 .reader-dark .anki-settings-panel {
-  color: #e7eaf0;
-  background: #232832;
-  border-color: #373d49;
+  color: #f3efed;
+  background: #2a2a2a;
+  border-color: #3f3f3f;
 }
 
 .reader-setting-group {
@@ -560,13 +560,13 @@ input:focus-visible {
 }
 
 .reader-setting-group > span {
-  color: #68758a;
+  color: #645a55;
   font-size: 12px;
   font-weight: 750;
 }
 
 .reader-dark .reader-setting-group > span {
-  color: #aab4c3;
+  color: #f6eae4;
 }
 
 .reader-setting-options {
@@ -579,15 +579,15 @@ input:focus-visible {
   min-width: 42px;
   padding: 7px 10px;
   background: white;
-  border: 1px solid #d4dce8;
+  border: 1px solid #e8e5e2;
   border-radius: 8px;
   cursor: pointer;
 }
 
 .reader-setting-options button.selected {
-  color: #285da8;
-  background: #edf4ff;
-  border-color: #bcd0ef;
+  color: #c77c5c;
+  background: #f3efed;
+  border-color: #f6eae4;
 }
 
 .reader-setting-options button:disabled {
@@ -605,7 +605,7 @@ input:focus-visible {
   display: grid;
   gap: 5px;
   margin-left: auto;
-  color: #67758a;
+  color: #645a55;
   font-size: 12px;
 }
 
@@ -615,10 +615,10 @@ input:focus-visible {
   justify-content: center;
   min-height: 36px;
   padding: 8px 12px;
-  color: #285da8;
+  color: #c77c5c;
   font-weight: 700;
-  background: #edf4ff;
-  border: 1px solid #cdddf5;
+  background: #f3efed;
+  border: 1px solid #f3efed;
   border-radius: 9px;
   cursor: pointer;
 }
@@ -631,7 +631,7 @@ input:focus-visible {
 
 .reader-hint {
   margin: 0 0 10px;
-  color: #68758a;
+  color: #645a55;
   font-size: 13px;
 }
 
@@ -643,8 +643,8 @@ input:focus-visible {
 }
 
 .reader-loading {
-  color: #285da8;
-  background: #edf4ff;
+  color: #c77c5c;
+  background: #f3efed;
 }
 
 .reader-error {
@@ -660,14 +660,14 @@ input:focus-visible {
 .close-button {
   padding: 9px 13px;
   background: white;
-  border: 1px solid #d4dce8;
+  border: 1px solid #e8e5e2;
   border-radius: 9px;
   cursor: pointer;
 }
 
 .back-button:hover,
 .close-button:hover {
-  background: #f0f4fa;
+  background: #f3efed;
 }
 
 .epub-viewer {
@@ -676,26 +676,26 @@ input:focus-visible {
   min-height: 560px;
   overflow: auto;
   background: white;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e8e5e2;
   border-radius: 14px;
   box-shadow: 0 18px 40px rgba(35, 49, 73, 0.1);
 }
 
 .reader-dark .dictionary-panel {
-  color: #e7eaf0;
-  background: rgba(35, 40, 50, 0.98);
-  border-color: #454d5b;
+  color: #f3efed;
+  background: rgba(48, 48, 48, 0.98);
+  border-color: #4f4f4f;
 }
 
 .reader-dark .dictionary-reading,
 .reader-dark .dictionary-source,
 .reader-dark .dictionary-message,
 .reader-dark .anki-status {
-  color: #b4becc;
+  color: #f6eae4;
 }
 
 .reader-dark .sentence-context {
-  background: #171a20;
+  background: #1b1b1b;
 }
 
 .dictionary-panel {
@@ -708,7 +708,7 @@ input:focus-visible {
   padding: 22px;
   overflow: auto;
   background: rgba(255, 255, 255, 0.98);
-  border: 1px solid #d7e0ed;
+  border: 1px solid #e8e5e2;
   border-radius: 16px;
   box-shadow: 0 22px 55px rgba(31, 48, 78, 0.2);
 }
@@ -724,7 +724,7 @@ input:focus-visible {
 .dictionary-heading button,
 .anki-settings-heading button {
   padding: 0;
-  color: #718096;
+  color: #a99e98;
   font-size: 24px;
   line-height: 1;
   background: transparent;
@@ -733,7 +733,7 @@ input:focus-visible {
 }
 
 .dictionary-label {
-  color: #377df6;
+  color: #c77c5c;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -748,7 +748,7 @@ input:focus-visible {
 .dictionary-source,
 .anki-settings-heading p {
   margin: 5px 0 0;
-  color: #6d7889;
+  color: #645a55;
 }
 
 .definition-list {
@@ -766,7 +766,7 @@ input:focus-visible {
 
 .dictionary-message,
 .anki-status {
-  color: #59677a;
+  color: #645a55;
   font-size: 13px;
   line-height: 1.5;
 }
@@ -774,12 +774,12 @@ input:focus-visible {
 .sentence-context {
   margin: 18px 0;
   padding: 13px 14px;
-  background: #f4f7fb;
+  background: #f3efed;
   border-radius: 10px;
 }
 
 .sentence-context span {
-  color: #738096;
+  color: #a99e98;
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
@@ -796,7 +796,7 @@ input:focus-visible {
   padding: 11px 16px;
   color: white;
   font-weight: 750;
-  background: #377df6;
+  background: #c77c5c;
   border: 0;
   border-radius: 10px;
   cursor: pointer;
@@ -811,7 +811,7 @@ input:focus-visible {
   margin-bottom: 18px;
   padding: 20px;
   background: white;
-  border: 1px solid #dce3ed;
+  border: 1px solid #e8e5e2;
   border-radius: 14px;
   box-shadow: 0 12px 30px rgba(35, 49, 73, 0.08);
 }
@@ -829,7 +829,7 @@ input:focus-visible {
 }
 
 .anki-settings-grid span {
-  color: #647186;
+  color: #645a55;
   font-size: 12px;
   font-weight: 700;
 }
@@ -837,7 +837,7 @@ input:focus-visible {
 .anki-settings-grid input {
   min-width: 0;
   padding: 9px 10px;
-  border: 1px solid #d4dce8;
+  border: 1px solid #e8e5e2;
   border-radius: 8px;
 }
 
@@ -919,3 +919,21 @@ input:focus-visible {
     margin-left: 0;
   }
 }
+
+/* Black and burnt-orange chrome, including panels rendered outside the EPUB. */
+.app-dark { color: #e8e5e2; background: #252525; color-scheme: dark; }
+.app-dark .brand, .app-dark .dictionary-label, .app-dark .library-toolbar h1,
+.app-dark .chapter-badge { color: #e3a07d; }
+.app-dark .dictionary-panel, .app-dark .anki-settings-panel,
+.app-dark .reader-settings-panel, .app-dark .chapter-menu,
+.app-dark .epub-viewer { background: #303030; border-color: #48413d; }
+.app-dark .sentence-context, .app-dark .global-theme-button,
+.app-dark .reader-tool-button, .app-dark .back-button,
+.app-dark .reader-setting-options button, .app-dark .dictionary-import-button,
+.app-dark .anki-test-button { color: #e3a07d; background: #3c302a; border-color: #645047; }
+.app-dark input, .app-dark select { color: #e8e5e2; background: #252525; border-color: #48413d; }
+.app-dark .chapter-menu-item:hover { background: #3c302a; }
+.app-dark .dictionary-reading, .app-dark .dictionary-source,
+.app-dark .dictionary-message, .app-dark .anki-status,
+.app-dark .anki-settings-grid span, .app-dark .anki-settings-heading p { color: #b5aaa3; }
+::selection { background: #c77c5c66; }

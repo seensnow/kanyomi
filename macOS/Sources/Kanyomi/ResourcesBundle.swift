@@ -1,5 +1,6 @@
 import Foundation
 import AppKit
+import SwiftUI
 extension Bundle {
     static var readerResources: Bundle {
         if let resources = Bundle.main.resourceURL,
@@ -20,4 +21,8 @@ enum BrandMark {
         centered.isTemplate = true
         return centered
     }()
+}
+
+enum ReaderPalette {
+    static let accent = Color(red: 199 / 255, green: 124 / 255, blue: 92 / 255)
 }

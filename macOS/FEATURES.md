@@ -34,4 +34,6 @@ Brand mark: Japanese kanji 「簡」 in the macOS icon/sidebar and web brand/fav
 
 Compatibility: legacy SimpleReader data folders, storage keys, bundle identifier and Keychain identifiers are retained to preserve existing libraries and settings. The GitHub repository URL remains unchanged.
 
-The 「簡」 logo uses the user-supplied 青柳衡山 calligraphy PNG across the native icon/sidebar and web brand/favicon. The original source pixels, transparency and proportions are preserved; rendered marks use sage green (#4d6657) and center the visible ink using the new image’s ink bounds and visual center. No installed font is required.
+The 「簡」 logo uses the user-supplied 青柳衡山 calligraphy PNG across the native icon/sidebar and web brand/favicon. The original source pixels, transparency and proportions are preserved; rendered marks use burnt orange (#c77c5c) and center the visible ink using the new image’s ink bounds and visual center. No installed font is required.
+
+The native app uses dark chrome with burnt-orange accents throughout navigation, controls, statistics and dictionary content. New reading preferences default to Night; the reader still supports Paper, White and Custom page themes. Web defaults to dark and uses the same orange accents in both selectable themes.

@@ -47,7 +47,7 @@ function getInitialTheme(): Theme {
   } catch {
     // Use the default theme when storage is unavailable or malformed.
   }
-  return 'light'
+  return 'dark'
 }
 
 async function findEpubs(

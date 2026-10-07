@@ -114,7 +114,7 @@ function EpubReader(props: EpubReaderProps) {
       body: { color: '#263143', background: '#ffffff' },
     })
     rendition.themes.registerRules('readerDark', {
-      body: { color: '#e7eaf0', background: '#20242c' },
+      body: { color: '#e8e5e2', background: '#252525' },
     })
     rendition.themes.select(appearanceRef.current.theme === 'dark' ? 'readerDark' : 'readerLight')
     rendition.themes.fontSize(`${appearanceRef.current.fontSize}px`)

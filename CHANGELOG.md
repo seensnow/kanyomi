@@ -2,6 +2,8 @@
 
 ## macOS 0.1.0-beta.7 — 2026-10-07
 
+- Unify native and web styling around charcoal/black with burnt-orange accents, including the icon/logo, controls, dictionary examples/tags/pitch/mining selection, highlights and statistics. Native chrome is dark; sidebar navigation uses explicit buttons with a contrasting gray selected row to avoid system blue highlighting. New reading settings and the web default to dark. Keep selectable reading page themes and saved web theme choices. Validation: web lint/tests/build, native tests/release packaging, signature verification and packaged UI/icon review.
+
 - Use the newly supplied 青柳衡山 running-script 「簡」 PNG, preserving the sage green rendering and recalculating scale/alignment from its visible ink. Keep the source PNG untouched. Use **Kanyomi** for all current display names, app bundle filename, titles and project documentation; retain the existing storage identifiers. Validation: web lint/tests/build, native tests/release packaging, signature and packaged UI/icon checks.
 
 - Restore sage green (#4d6657) for the supplied calligraphy mark and center its visible ink by shifting it left in the native icon/sidebar and web brand/favicon. Keep the original PNG source unchanged. Validation: web lint/build, native release packaging/signature verification and visual icon/sidebar checks.

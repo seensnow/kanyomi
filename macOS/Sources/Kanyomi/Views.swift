@@ -2,7 +2,7 @@ import SwiftUI
 import AppKit
 import Charts
 
-private let accent = Color(red: 0.66, green: 0.36, blue: 0.25)
+private let accent = ReaderPalette.accent
 struct MainView: View {
     @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
@@ -12,13 +12,13 @@ struct MainView: View {
         let _ = interfaceLocale
         NavigationSplitView {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 10) { Image(nsImage: BrandMark.image).resizable().scaledToFit().frame(width: 40, height: 40).foregroundStyle(Color(red: 77 / 255, green: 102 / 255, blue: 87 / 255)).accessibilityHidden(true); VStack(alignment: .leading) { Text("Kanyomi").font(.headline); Text("macOS · beta 7").font(.caption).foregroundStyle(.secondary) } }.padding(20)
-                List(selection: $store.section) {
-                    Label(L("Library"), systemImage: "books.vertical").tag("Library")
-                    Label(L("Dictionary"), systemImage: "character.book.closed").tag("Dictionary")
-                    Label(L("Vocabulary"), systemImage: "tray.full").tag("Vocabulary")
-                    Label(L("Statistics"), systemImage: "chart.bar.xaxis").tag("Statistics")
-                    Label(L("Sync & Backup"), systemImage: "arrow.triangle.2.circlepath").tag("Sync")
+                HStack(spacing: 10) { Image(nsImage: BrandMark.image).resizable().scaledToFit().frame(width: 40, height: 40).foregroundStyle(accent).accessibilityHidden(true); VStack(alignment: .leading) { Text("Kanyomi").font(.headline); Text("macOS · beta 7").font(.caption).foregroundStyle(.secondary) } }.padding(20)
+                List {
+                    navigationItem("Library", icon: "books.vertical", section: "Library")
+                    navigationItem("Dictionary", icon: "character.book.closed", section: "Dictionary")
+                    navigationItem("Vocabulary", icon: "tray.full", section: "Vocabulary")
+                    navigationItem("Statistics", icon: "chart.bar.xaxis", section: "Statistics")
+                    navigationItem("Sync & Backup", icon: "arrow.triangle.2.circlepath", section: "Sync")
                     Section(L("Bookshelves")) {
                         Button { store.selectedShelf = ""; store.section = "Library"; store.closeBook() } label: { Label(L("All books"), systemImage: "square.grid.2x2") }.buttonStyle(.plain)
                         ForEach(store.state.shelves, id: \.self) { shelf in
@@ -56,6 +56,20 @@ struct MainView: View {
         .alert(L("New Bookshelf"), isPresented: $addingShelf) { TextField(L("Name"), text: $shelfName); Button(L("Create")) { let name = shelfName.trimmingCharacters(in: .whitespacesAndNewlines); if !name.isEmpty && !store.state.shelves.contains(name) { store.state.shelves.append(name); store.saveSoon() }; shelfName = "" }; Button(L("Cancel"), role: .cancel) {} }
         .onChange(of: store.section) { _, value in if value != "Library" { store.closeBook() } }
     }
+    private func navigationItem(_ title: String, icon: String, section: String) -> some View {
+        Button { store.section = section } label: {
+            HStack {
+                Image(systemName: icon).foregroundStyle(accent)
+                Text(L(title)).foregroundStyle(.primary)
+                Spacer(minLength: 0)
+            }.padding(.vertical, 5).padding(.horizontal, 7)
+                .background(store.section == section ? Color(white: 0.34) : .clear, in: RoundedRectangle(cornerRadius: 6))
+                .contentShape(Rectangle())
+        }.buttonStyle(.plain)
+            .listRowBackground(Color.clear)
+            .accessibilityAddTraits(store.section == section ? .isSelected : [])
+    }
+
 }
 struct LibraryView: View {
     @Environment(\.locale) private var interfaceLocale
@@ -90,11 +104,11 @@ struct BookTile: View {
         Button { store.openBook(book.id) } label: {
             VStack(alignment: .leading, spacing: 10) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 8).fill(Color(red: 0.87, green: 0.84, blue: 0.76).gradient)
+                    RoundedRectangle(cornerRadius: 8).fill(Color(white: 0.22).gradient)
                     if let cover = book.cover, let image = NSImage(contentsOf: store.root.appendingPathComponent("Books/\(book.id)/Content/\(cover)")) { GeometryReader { geometry in
                         Image(nsImage: image).resizable().scaledToFill().frame(width: geometry.size.width, height: geometry.size.height).clipped()
                     } }
-                    else { VStack(spacing: 18) { Image(systemName: "sparkle").font(.largeTitle); Text(book.title).font(.system(size: 24, design: .serif)).multilineTextAlignment(.center); Text(book.author).font(.caption) }.foregroundStyle(Color(red: 0.29, green: 0.29, blue: 0.25)).padding(20) }
+                    else { VStack(spacing: 18) { Image(systemName: "sparkle").font(.largeTitle); Text(book.title).font(.system(size: 24, design: .serif)).multilineTextAlignment(.center); Text(book.author).font(.caption) }.foregroundStyle(Color(white: 0.90)).padding(20) }
                 }.aspectRatio(0.7, contentMode: .fit).clipShape(RoundedRectangle(cornerRadius: 8)).shadow(color: .black.opacity(0.08), radius: 8, y: 4)
                 Text(book.title).font(.headline).lineLimit(2).frame(height: 38, alignment: .topLeading)
                 Text(book.author).font(.caption).foregroundStyle(.secondary).lineLimit(1)
@@ -206,7 +220,7 @@ struct DictionaryPanel: View {
                             VStack(alignment: .trailing, spacing: 8) {
                                 Button { store.playWord(word) } label: {
                                     Label(L(store.pronunciationLoading ? "Loading…" : "Listen"), systemImage: "speaker.wave.2.fill")
-                                }.buttonStyle(.borderedProminent).tint(.blue).disabled(store.pronunciationLoading).help(L("Play source audio; use Japanese speech if unavailable"))
+                                }.buttonStyle(.borderedProminent).tint(accent).disabled(store.pronunciationLoading).help(L("Play source audio; use Japanese speech if unavailable"))
                                 Button { store.speak(word) } label: { Label(L("Japanese voice"), systemImage: "waveform") }.font(.caption).buttonStyle(.borderless).help(L("Read aloud using the Mac's Japanese voice"))
                             }
                         }
@@ -215,14 +229,14 @@ struct DictionaryPanel: View {
                         if !word.frequencies.isEmpty {
                             LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), alignment: .leading)], alignment: .leading, spacing: 6) {
                                 ForEach(Array(word.frequencies.enumerated()), id: \.offset) { _, value in
-                                    Text(value).font(.caption2).foregroundStyle(.purple).padding(.horizontal, 8).padding(.vertical, 4).background(.purple.opacity(0.12), in: RoundedRectangle(cornerRadius: 5)).textSelection(.enabled)
+                                    Text(value).font(.caption2).foregroundStyle(accent).padding(.horizontal, 8).padding(.vertical, 4).background(accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 5)).textSelection(.enabled)
                                 }
                             }
                         }
                         if store.results.count > 1 {
                             Text(L("%d matches · Scroll for all definitions", store.results.count)).font(.caption)
                         }
-                }.frame(maxWidth: .infinity, alignment: .leading).fixedSize(horizontal: false, vertical: true).padding(12).background(Color.blue.opacity(0.04))
+                }.frame(maxWidth: .infinity, alignment: .leading).fixedSize(horizontal: false, vertical: true).padding(12).background(accent.opacity(0.06))
                 Divider()
                 if word.glossaries.count > 1 { Picker(L("Mining definition"), selection: $store.selectedGlossary) { ForEach(Array(word.glossaries.enumerated()), id: \.offset) { i, glossary in Text(glossary.dictionary).tag(i) } }.padding(.horizontal, 12).padding(.vertical, 8) }
                 GlossaryWebView(html: GlossaryDocument.matches(store.results), css: store.dictionaryCSS, engine: store.engine, theme: colorScheme == .dark ? "Night" : "White", onSelection: { store.popupSelectionText = $0 }, selectedMatch: store.selectedResult, onMatch: { index in
@@ -279,20 +293,20 @@ struct DictionaryDownloads: View {
                 download("KANJIDIC", detail: "Kanji meanings and readings · English", url: "https://github.com/yomidevs/jmdict-yomitan/releases/latest/download/KANJIDIC_english.zip")
                 Text(L("Download a ZIP, then choose Import dictionary ZIP… without unzipping it.")).font(.caption).foregroundStyle(.secondary)
                 HStack {
-                    Link(L("Jitendex website"), destination: URL(string: "https://jitendex.org/pages/downloads.html")!)
-                    Link(L("More dictionaries"), destination: URL(string: "https://github.com/yomidevs/jmdict-yomitan")!)
+                    Link(L("Jitendex website"), destination: URL(string: "https://jitendex.org/pages/downloads.html")!).foregroundStyle(ReaderPalette.accent)
+                    Link(L("More dictionaries"), destination: URL(string: "https://github.com/yomidevs/jmdict-yomitan")!).foregroundStyle(ReaderPalette.accent)
                 }.font(.caption)
                 Divider().padding(.vertical, 4)
                 Text(L("Official Japanese–Chinese dictionaries")).font(.headline)
-                Link(L("Shogakukan Japanese–Chinese · Product page"), destination: URL(string: "https://www.monokakido.jp/ja/dictionaries/cj3/index.html")!)
-                Link(L("Dictionaries by Monokakido · Download app"), destination: URL(string: "https://www.monokakido.jp/ja/dictionaries/app/")!)
+                Link(L("Shogakukan Japanese–Chinese · Product page"), destination: URL(string: "https://www.monokakido.jp/ja/dictionaries/cj3/index.html")!).foregroundStyle(ReaderPalette.accent)
+                Link(L("Dictionaries by Monokakido · Download app"), destination: URL(string: "https://www.monokakido.jp/ja/dictionaries/app/")!).foregroundStyle(ReaderPalette.accent)
                 Text(L("Paid dictionary content for the separate Monokakido app on Mac/iOS. These links do not provide a Yomitan ZIP for import here.")).font(.caption).foregroundStyle(.secondary)
             }.fixedSize(horizontal: false, vertical: true).padding(.top, 8)
         }.fixedSize(horizontal: false, vertical: true)
     }
     private func download(_ title: String, detail: String, url: String) -> some View {
         VStack(alignment: .leading, spacing: 3) {
-            Link(destination: URL(string: url)!) { Label(title, systemImage: "arrow.down.circle") }
+            Link(destination: URL(string: url)!) { Label(title, systemImage: "arrow.down.circle").foregroundStyle(ReaderPalette.accent) }
             Text(L(detail)).font(.caption).foregroundStyle(.secondary)
         }
     }
@@ -357,7 +371,7 @@ struct StatisticsView: View {
                 Text(L("Reading minutes")).font(.headline)
                 Chart(days) { day in BarMark(x: .value("Date", String(day.id.suffix(5))), y: .value("Minutes", day.minutes)).foregroundStyle(accent.gradient) }.frame(height: 240)
                 Text(L("Characters read")).font(.headline)
-                Chart(days) { day in BarMark(x: .value("Date", String(day.id.suffix(5))), y: .value("Characters", day.characters)).foregroundStyle(Color(red: 0.42, green: 0.51, blue: 0.43).gradient) }.frame(height: 180)
+                Chart(days) { day in BarMark(x: .value("Date", String(day.id.suffix(5))), y: .value("Characters", day.characters)).foregroundStyle(accent.gradient) }.frame(height: 180)
                 Text(L("Reading time pauses when this app is in the background or idle for 90 seconds. Large jumps and backward scrolling don't count as newly read characters.")).font(.caption).foregroundStyle(.secondary)
                 Divider()
                 ForEach(store.state.books) { book in let records = store.state.days.filter { $0.bookID == book.id }; HStack { Text(book.title); Spacer(); Text("\(Int(records.reduce(0) { $0 + $1.seconds } / 60)) min · \(records.reduce(0) { $0 + $1.characters }.formatted()) 字").foregroundStyle(.secondary) } }

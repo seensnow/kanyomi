@@ -22,6 +22,6 @@ import WebKit
         print("Reused glossary update: \(Int(Date().timeIntervalSince(start) * 1000)) ms")
         #expect(result[0] == "same document")
         #expect(result[1] == "次の意味")
-        #expect(result[2].contains("#202226"))
+        #expect(result[2].contains("#252525"))
     }
 }

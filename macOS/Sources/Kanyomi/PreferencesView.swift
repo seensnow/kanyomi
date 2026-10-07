@@ -72,8 +72,8 @@ struct PreferencesView: View {
                 Text(L("Kanyomi for macOS")).font(.title)
                 Text("0.1.0 beta 7 · Native SwiftUI + AppKit + WebKit")
                 Text(L("Inspired by Hoshi Reader. Offline dictionary lookup uses its hoshidicts engine, including Yomitan's Japanese deinflection rules. This is an independent GPL-3.0 application.")).foregroundStyle(.secondary)
-                Link("Hoshi Reader", destination: URL(string: "https://github.com/Manhhao/Hoshi-Reader")!)
-                Link(L("Yomitan dictionaries"), destination: URL(string: "https://github.com/yomidevs/jmdict-yomitan/releases")!)
+                Link("Hoshi Reader", destination: URL(string: "https://github.com/Manhhao/Hoshi-Reader")!).foregroundStyle(ReaderPalette.accent)
+                Link(L("Yomitan dictionaries"), destination: URL(string: "https://github.com/yomidevs/jmdict-yomitan/releases")!).foregroundStyle(ReaderPalette.accent)
                 Button(L("Show local library folder")) { NSWorkspace.shared.open(store.root) }
                 Text(L("No bundled commercial books or dictionaries. Import the dictionaries you use with Yomitan. Online pronunciation and Google Drive sync only run when requested.")).font(.caption).foregroundStyle(.secondary)
                 Spacer()
