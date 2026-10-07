@@ -30,8 +30,8 @@ Validation: 22 automated tests pass, including EPUB import, archive safety, dict
 
 Live Anki validation (beta 6): the packaged app adds a dictionary-search word through AnkiConnect v6 using localized Basic fields. Term/reading, definitions, example, source, tags and generated card HTML were verified; duplicate addition is rejected without a second note, and persistence was checked after Anki restart. Live audio/media upload, Lapis and book-context mining are not covered by this check.
 
-Brand mark: Japanese kanji 「簡」 in the macOS icon/sidebar and web brand/favicon. Native icon generation was visually checked at 512 px; packaged beta 7 retains the existing library, dictionaries and Chinese interface settings, and 学 lookup works; the display name is 「簡読み」 and internal project name is Kanyomi.
+Brand mark: Japanese kanji 「簡」 in the macOS icon/sidebar and web brand/favicon. Native icon generation was visually checked at 512 px; packaged beta 7 retains the existing library, dictionaries and Chinese interface settings, and 学 lookup works; the display name is 「Kanyomi」 and internal project name is Kanyomi.
 
 Compatibility: legacy SimpleReader data folders, storage keys, bundle identifier and Keychain identifiers are retained to preserve existing libraries and settings. The GitHub repository URL remains unchanged.
 
-The 「簡」 logo uses the user-supplied 趙孟頫 calligraphy PNG across the native icon/sidebar and web brand/favicon. The original source pixels, transparency and proportions are preserved; rendered marks use sage green (#4d6657) and shift left to center the visible ink. No installed font is required.
+The 「簡」 logo uses the user-supplied 青柳衡山 calligraphy PNG across the native icon/sidebar and web brand/favicon. The original source pixels, transparency and proportions are preserved; rendered marks use sage green (#4d6657) and center the visible ink using the new image’s ink bounds and visual center. No installed font is required.

@@ -5,7 +5,7 @@ TASK_CONFIGURATION="${1:-release}"
 "$TASK_ROOT/scripts/swift-build.sh" build -c "$TASK_CONFIGURATION"
 TASK_BINARY="$TASK_ROOT/.build/arm64-apple-macosx/$TASK_CONFIGURATION"
 if [ ! -f "$TASK_BINARY/Kanyomi" ]; then TASK_BINARY="$TASK_ROOT/.build/x86_64-apple-macosx/$TASK_CONFIGURATION"; fi
-TASK_APP="$TASK_ROOT/dist/簡読み.app"
+TASK_APP="$TASK_ROOT/dist/Kanyomi.app"
 rm -rf "$TASK_APP"
 mkdir -p "$TASK_APP/Contents/MacOS" "$TASK_APP/Contents/Resources"
 cp "$TASK_BINARY/Kanyomi" "$TASK_APP/Contents/MacOS/"
@@ -30,8 +30,8 @@ cat > "$TASK_APP/Contents/Info.plist" <<'PLIST'
 <plist version="1.0"><dict>
 <key>CFBundleExecutable</key><string>Kanyomi</string>
 <key>CFBundleIdentifier</key><string>local.simplereader.macos</string>
-<key>CFBundleName</key><string>簡読み</string>
-<key>CFBundleDisplayName</key><string>簡読み</string>
+<key>CFBundleName</key><string>Kanyomi</string>
+<key>CFBundleDisplayName</key><string>Kanyomi</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>0.1.0-beta.7</string>
 <key>CFBundleVersion</key><string>7</string>
@@ -44,7 +44,7 @@ cat > "$TASK_APP/Contents/Info.plist" <<'PLIST'
 PLIST
 codesign --force --deep --sign - "$TASK_APP"
 # Retire only generated packages from the previous product name.
-rm -rf "$TASK_ROOT/dist/SimpleReader.app" "$TASK_ROOT/dist/簡単.app"
+rm -rf "$TASK_ROOT/dist/SimpleReader.app" "$TASK_ROOT/dist/簡単.app" "$TASK_ROOT/dist/簡読み.app"
 rm -f "$TASK_ROOT/dist/SimpleReader-macOS-beta.zip" "$TASK_ROOT/dist/Kantan-macOS-beta.zip"
 # Include source and licenses alongside the binary for the GPL beta distribution.
 # Stage the distributable in a temporary folder. Only one app remains in dist,

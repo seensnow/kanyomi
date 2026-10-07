@@ -98,7 +98,7 @@ struct GoogleToken: Codable { var access: String; var refresh: String; var expir
             guard pieces.count >= 2, pieces[0] == "GET", let url = URLComponents(string: "http://127.0.0.1" + pieces[1]), url.path == "/oauth" else { connection.cancel(); return }
             let values = (url.queryItems ?? []).reduce(into: [String: String]()) { $0[$1.name] = $1.value ?? "" }
             guard values["state"] == self.state else { connection.cancel(); return }
-            let response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\n\r\n<html><body><h2>Return to 簡読み</h2>You can close this window.</body></html>"
+            let response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\n\r\n<html><body><h2>Return to Kanyomi</h2>You can close this window.</body></html>"
             connection.send(content: Data(response.utf8), completion: .contentProcessed { _ in connection.cancel() })
             if let code = values["code"] { self.finish(.success(code)) } else { self.finish(.failure(ReaderError.message(values["error"] ?? "Google sign-in failed"))) }
         } }

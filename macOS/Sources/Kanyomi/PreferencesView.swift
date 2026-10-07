@@ -69,7 +69,7 @@ struct PreferencesView: View {
                 Spacer()
             }.padding(24).tabItem { Label(L("Audio"), systemImage: "speaker.wave.2") }
             VStack(alignment: .leading, spacing: 20) {
-                Text(L("簡読み for macOS")).font(.title)
+                Text(L("Kanyomi for macOS")).font(.title)
                 Text("0.1.0 beta 7 · Native SwiftUI + AppKit + WebKit")
                 Text(L("Inspired by Hoshi Reader. Offline dictionary lookup uses its hoshidicts engine, including Yomitan's Japanese deinflection rules. This is an independent GPL-3.0 application.")).foregroundStyle(.secondary)
                 Link("Hoshi Reader", destination: URL(string: "https://github.com/Manhhao/Hoshi-Reader")!)

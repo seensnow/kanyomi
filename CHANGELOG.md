@@ -2,6 +2,8 @@
 
 ## macOS 0.1.0-beta.7 — 2026-10-07
 
+- Use the newly supplied 青柳衡山 running-script 「簡」 PNG, preserving the sage green rendering and recalculating scale/alignment from its visible ink. Keep the source PNG untouched. Use **Kanyomi** for all current display names, app bundle filename, titles and project documentation; retain the existing storage identifiers. Validation: web lint/tests/build, native tests/release packaging, signature and packaged UI/icon checks.
+
 - Restore sage green (#4d6657) for the supplied calligraphy mark and center its visible ink by shifting it left in the native icon/sidebar and web brand/favicon. Keep the original PNG source unchanged. Validation: web lint/build, native release packaging/signature verification and visual icon/sidebar checks.
 
 - Replace the font-based 「簡」 approximation with the user-supplied 趙孟頫 calligraphy PNG in the app icon, sidebar, web brand and favicon. Preserve the original PNG bytes and transparency, fit its proportions without stretching, and remove unused Yuji assets and attribution. Validation: matching source/asset SHA-256 hashes, web lint/build, native release packaging, signature verification and visual icon review.

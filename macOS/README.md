@@ -1,10 +1,10 @@
-# 簡読み (Kanyomi) for macOS — 0.1.0 beta 7
+# Kanyomi for macOS — 0.1.0 beta 7
 
 An independent native Japanese EPUB reader inspired by Hoshi Reader. SwiftUI and AppKit provide the desktop UI; Apple's WebKit renders EPUB chapters, including vertical writing and ruby. Offline Yomitan lookup uses the GPL Hoshi dictionary engine. The existing React web project is left intact.
 
 ## Beta fixes
 
-- The app icon and sidebar now use the Japanese kanji 「簡」, on a cream background with a green glyph. The display name is 「簡読み」 and internal project name is Kanyomi.
+- The app icon and sidebar now use the Japanese kanji 「簡」, on a cream background with a green glyph. The display and internal project name is Kanyomi.
 
 - Beta 6 uses compact Hoshi-inspired glossary layouts: one collapsible heading per dictionary, numbered entries, synonyms separated by `|`, dictionary-provided name/word tags, smaller mining controls and less prominent examples. All matches still scroll continuously; original glossary indices remain available for mining.
 
@@ -14,7 +14,7 @@ An independent native Japanese EPUB reader inspired by Hoshi Reader. SwiftUI and
 - Beta 3 brings colored dictionary source cards, part-of-speech tags, inline ruby examples and pitch graphs when available. Listen plays the configured audio source with Japanese speech fallback; Japanese voice reads aloud directly.
 
 - Dictionary management stays within the window and scrolls when needed; headers, download links and import controls stay visible.
-- Packaging retains only `dist/簡読み.app`, with a visible beta 7 version label. Distribution staging uses a temporary folder that is removed after creating the ZIP.
+- Packaging retains only `dist/Kanyomi.app`, with a visible beta 7 version label. Distribution staging uses a temporary folder that is removed after creating the ZIP.
 
 - Library covers use a portrait ratio and fill the card without padding or leftover background.
 - Self-closing EPUB XHTML scripts are stripped before HTML rendering so they cannot swallow illustration pages. Image-only SVG/image pages fit the viewport in either writing mode.
@@ -26,7 +26,7 @@ The machine-translated Jitendex Chinese download recommendation has been removed
 
 ## Open the beta
 
-Run `dist/簡読み.app` after packaging, or unzip `dist/Kanyomi-macOS-beta.zip`. Requires macOS 14+, built for the architecture of the build machine (this build: Apple Silicon). This development build is ad-hoc signed, without Apple notarization.
+Run `dist/Kanyomi.app` after packaging, or unzip `dist/Kanyomi-macOS-beta.zip`. Requires macOS 14+, built for the architecture of the build machine (this build: Apple Silicon). This development build is ad-hoc signed, without Apple notarization.
 
 1. Import EPUBs with **⌘O**, drag and drop, or the Import button. The sample button imports the included original Japanese book and tiny test dictionary.
 2. Import your Yomitan `.zip` dictionaries with **⇧⌘O**. Term, frequency, pitch, and kanji dictionaries can share a ZIP. Enable, disable, reorder, and assign definition categories in Dictionary or Settings. A tiny sample dictionary is available in `Sources/Kanyomi/Resources/SampleDictionary.zip` for testing; it is not a comprehensive Japanese dictionary.
@@ -57,7 +57,7 @@ No full Xcode installation or network downloads are needed; all dependency sourc
 ```sh
 ./scripts/swift-build.sh test
 ./scripts/package-app.sh release
-open dist/簡読み.app
+open dist/Kanyomi.app
 ```
 
 The build script uses writable local caches and an isolated copy of the SwiftPM manifest interface. This also works around an installed Command Line Tools mismatch (old private Swift 5 interface with the newer Swift 6 library) and explicitly points C++ at the SDK's libc++ headers. It does not alter the system tools.
@@ -68,4 +68,4 @@ Live beta 6 Anki check: adding a dictionary-search word through the app succeede
 
 Compatibility: legacy SimpleReader data folders, storage keys, bundle identifier and Keychain identifiers are retained to preserve existing libraries and settings. The GitHub repository URL remains unchanged.
 
-The 「簡」 logo uses the user-supplied 趙孟頫 calligraphy PNG across the native icon/sidebar and web brand/favicon. The original source pixels, transparency and proportions are preserved; rendered marks use sage green (#4d6657) and shift left to center the visible ink. No installed font is required.
+The 「簡」 logo uses the user-supplied 青柳衡山 calligraphy PNG across the native icon/sidebar and web brand/favicon. The original source pixels, transparency and proportions are preserved; rendered marks use sage green (#4d6657) and center the visible ink using the new image’s ink bounds and visual center. No installed font is required.

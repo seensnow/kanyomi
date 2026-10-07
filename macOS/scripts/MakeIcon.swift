@@ -9,17 +9,15 @@ NSBezierPath(roundedRect: NSRect(x: 32, y: 32, width: 960, height: 960), xRadius
 // Preserve the supplied calligraphy image’s proportions and transparent background.
 let markURL = URL(fileURLWithPath: CommandLine.arguments[2])
 guard let mark = NSImage(contentsOf: markURL) else { fatalError("Missing brand mark: \(markURL.path)") }
-let markScale = min(640 / mark.size.width, 640 / mark.size.height)
-let markSize = NSSize(width: mark.size.width * markScale, height: mark.size.height * markScale)
-// The ink’s horizontal center of mass is 60% across the supplied image.
-// Move it left by 10% of its fitted width to center the visible strokes.
+let sourceRect = NSRect(x: 655, y: 150, width: 1532, height: 2047)
+let markRect = NSRect(x: 249.343942, y: 174.001287, width: 478.983879, height: 640)
 let tintedMark = NSImage(size: mark.size)
 tintedMark.lockFocus()
 mark.draw(in: NSRect(origin: .zero, size: mark.size))
 NSColor(calibratedRed: 77 / 255, green: 102 / 255, blue: 87 / 255, alpha: 1).setFill()
 NSRect(origin: .zero, size: mark.size).fill(using: .sourceAtop)
 tintedMark.unlockFocus()
-tintedMark.draw(in: NSRect(x: (1024 - markSize.width) / 2 - markSize.width * 0.10, y: (1024 - markSize.height) / 2, width: markSize.width, height: markSize.height))
+tintedMark.draw(in: markRect, from: sourceRect, operation: .sourceOver, fraction: 1)
 image.unlockFocus()
 for size in [16,32,128,256,512] {
     for scale in [1,2] {

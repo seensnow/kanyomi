@@ -303,7 +303,7 @@ function App() {
       <header className="top-bar">
         <button className="brand" onClick={() => setReaderBook(null)}>
           <span className="brand-mark" aria-hidden="true"><img src="/brand-mark.svg" alt="" /></span>
-          <span>簡読み</span>
+          <span>Kanyomi</span>
         </button>
         <button
           className="global-theme-button"
