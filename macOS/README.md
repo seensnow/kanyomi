@@ -34,7 +34,7 @@ Run `dist/Kanyomi.app` after packaging, or unzip `dist/Kanyomi-macOS-beta.zip`. 
 4. Settings contains vertical/horizontal writing, themes, typography, custom CSS, imported fonts, audio sources, and Anki templates.
 5. Open Contents for chapter navigation, full-book search, bookmarks/highlights and audiobook import/SRT matching. Arrow keys/Space page through the current chapter; ⌘[ / ⌘] change chapters; ⌘D saves a bookmark.
 
-Data lives at `~/Library/Application Support/SimpleReaderMac`. Imports copy originals; deleting a library copy does not delete the source EPUB. Backup/restore includes imported EPUBs, dictionaries, vocabulary, bookmarks, statistics, fonts and settings. Google OAuth tokens and the OAuth client secret are held separately in Keychain. `KANYOMI_DATA_DIR` can isolate a test library; `SIMPLEREADER_DATA_DIR` remains supported for compatibility.
+Data lives at `~/Library/Application Support/KanyomiMac`. Imports copy originals; deleting a library copy does not delete the source EPUB. Backup/restore includes imported EPUBs, dictionaries, vocabulary, bookmarks, statistics, fonts and settings. Google OAuth tokens and the OAuth client secret are held separately in Keychain. `KANYOMI_DATA_DIR` can isolate a test library; `SIMPLEREADER_DATA_DIR` remains supported for compatibility.
 
 ## Anki
 
@@ -66,7 +66,7 @@ See `FEATURES.md` for scope, verification and remaining differences. Source and 
 
 Live beta 6 Anki check: adding a dictionary-search word through the app succeeded with the localized Basic note type and correctly mapped front/back fields. Definition content, duplicate prevention and persistence after Anki restart were verified. Select an existing deck, note type and exact field names in Settings → Anki; English defaults may differ from localized Anki names. Audio/media and book-context mining were not included in this live check.
 
-Compatibility: legacy SimpleReader data folders, storage keys, bundle identifier and Keychain identifiers are retained to preserve existing libraries and settings. The GitHub repository URL remains unchanged.
+Kanyomi uses its own storage and bundle identifiers. Existing libraries and browser settings migrate automatically; legacy identifiers are read only for upgrade compatibility. Google credentials fall back to the previous Keychain service on a user-initiated connection.
 
 The 「簡」 logo uses the user-supplied 青柳衡山 calligraphy PNG across the native icon/sidebar and web brand/favicon. The original source pixels, transparency and proportions are preserved; rendered marks use burnt orange (#c77c5c) and center the visible ink using the new image’s ink bounds and visual center. No installed font is required.
 

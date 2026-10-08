@@ -32,7 +32,7 @@ Live Anki validation (beta 6): the packaged app adds a dictionary-search word th
 
 Brand mark: Japanese kanji 「簡」 in the macOS icon/sidebar and web brand/favicon. Native icon generation was visually checked at 512 px; packaged beta 7 retains the existing library, dictionaries and Chinese interface settings, and 学 lookup works; the display name is 「Kanyomi」 and internal project name is Kanyomi.
 
-Compatibility: legacy SimpleReader data folders, storage keys, bundle identifier and Keychain identifiers are retained to preserve existing libraries and settings. The GitHub repository URL remains unchanged.
+Kanyomi uses its own storage and bundle identifiers. Existing libraries and browser settings migrate automatically; legacy identifiers are read only for upgrade compatibility. Google credentials fall back to the previous Keychain service on a user-initiated connection.
 
 The 「簡」 logo uses the user-supplied 青柳衡山 calligraphy PNG across the native icon/sidebar and web brand/favicon. The original source pixels, transparency and proportions are preserved; rendered marks use burnt orange (#c77c5c) and center the visible ink using the new image’s ink bounds and visual center. No installed font is required.
 

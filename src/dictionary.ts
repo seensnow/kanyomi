@@ -1,3 +1,4 @@
+import { migrateDatabase } from './storageMigration'
 import type JSZip from 'jszip'
 import deinja from 'deinja'
 
@@ -30,8 +31,8 @@ type YomitanIndex = {
   revision?: string
 }
 
-const databaseName = 'simple-reader'
-const databaseVersion = 3
+const databaseName = 'kanyomi'
+const databaseVersion = 4
 const termStoreName = 'dictionaryTerms'
 const dictionaryStoreName = 'dictionaries'
 
@@ -59,7 +60,8 @@ const demoEntries: Record<string, DictionaryResult> = {
   },
 }
 
-function openDatabase() {
+async function openDatabase() {
+  await migrateDatabase()
   return new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(databaseName, databaseVersion)
 

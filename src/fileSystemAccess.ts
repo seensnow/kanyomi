@@ -29,7 +29,7 @@ export async function pickDirectory() {
   }
 
   return showDirectoryPicker.call(window, {
-    id: 'simple-reader-library',
+    id: 'kanyomi-library',
     mode: 'read',
   })
 }

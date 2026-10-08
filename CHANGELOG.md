@@ -1,5 +1,11 @@
 # Changelog
 
+## Kanyomi naming completion — 2026-10-08
+
+- Use Kanyomi for sample book/dictionary metadata, native data folder, bundle identifier, Google client setting and Keychain writes; use kanyomi for browser databases, preferences and folder-picker identity. Copy browser data atomically on first access and preserve the old database; move the default native library on first launch, preserve explicit data-directory overrides, and read old preferences/credentials for compatibility. Legacy identifiers remain only in upgrade and generated-package cleanup code.
+- Confirmed main is unprotected. GitHub rejects branch-protection/ruleset access for this private repository with an upgrade-to-Pro-or-make-public message; visibility and account plan remain unchanged.
+- Validation: web lint, six tests and production build pass; 23 native tests pass, including library migration and WebKit checks, after rerunning outside the process-restricted sandbox. Release packaging and strict signature verification pass. Existing web large-chunk warning remains. Live OAuth/credential migration and a complete existing-user upgrade have not been checked interactively.
+
 ## macOS 0.1.0-beta.7 — 2026-10-07
 
 - Unify native and web styling around charcoal/black with burnt-orange accents, including the icon/logo, controls, dictionary examples/tags/pitch/mining selection, highlights and statistics. Native chrome is dark; sidebar navigation uses explicit buttons with a contrasting gray selected row to avoid system blue highlighting. New reading settings and the web default to dark. Keep selectable reading page themes and saved web theme choices. Validation: web lint/tests/build, native tests/release packaging, signature verification and packaged UI/icon review.

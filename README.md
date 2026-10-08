@@ -42,7 +42,7 @@ Open the local URL printed by Vite. For a production build, run `npm run build` 
 
 The macOS beta 6 AnkiConnect path has also been tested live: dictionary-search note creation with localized front/back fields, correct definition content, duplicate prevention and persistence after Anki restart. Audio/media upload and Lapis were not covered by that live check.
 
-Compatibility: legacy SimpleReader data folders, storage keys, bundle identifier and Keychain identifiers are retained to preserve existing libraries and settings. The GitHub repository URL remains unchanged.
+Kanyomi uses its own storage and bundle identifiers. Existing libraries and browser settings migrate automatically; legacy identifiers are read only for upgrade compatibility. Google credentials fall back to the previous Keychain service on a user-initiated connection.
 
 The 「簡」 logo uses the user-supplied 青柳衡山 calligraphy PNG across the native icon/sidebar and web brand/favicon. The original source pixels, transparency and proportions are preserved; rendered marks use burnt orange (#c77c5c) and center the visible ink using the new image’s ink bounds and visual center. No installed font is required.
 

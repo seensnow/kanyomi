@@ -1,3 +1,4 @@
+import { migrateDatabase } from './storageMigration'
 type BookDetails = {
   title: string
   cover?: Blob
@@ -39,13 +40,14 @@ export type SavedDirectory = {
 
 type LegacyBook = Omit<ImportedBook, 'source'>
 
-const databaseName = 'simple-reader'
+const databaseName = 'kanyomi'
 const booksStoreName = 'books'
 const directoriesStoreName = 'directories'
 
-function openDatabase() {
+async function openDatabase() {
+  await migrateDatabase()
   return new Promise<IDBDatabase>((resolve, reject) => {
-    const request = indexedDB.open(databaseName, 3)
+    const request = indexedDB.open(databaseName, 4)
 
     request.onupgradeneeded = () => {
       const database = request.result

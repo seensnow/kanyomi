@@ -29,7 +29,7 @@ cat > "$TASK_APP/Contents/Info.plist" <<'PLIST'
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
 <key>CFBundleExecutable</key><string>Kanyomi</string>
-<key>CFBundleIdentifier</key><string>local.simplereader.macos</string>
+<key>CFBundleIdentifier</key><string>local.kanyomi.macos</string>
 <key>CFBundleName</key><string>Kanyomi</string>
 <key>CFBundleDisplayName</key><string>Kanyomi</string>
 <key>CFBundlePackageType</key><string>APPL</string>

@@ -11,7 +11,7 @@ final class ReaderTests {
     func sample(_ name: String, ext: String) -> URL { Bundle.module.url(forResource: name, withExtension: ext, subdirectory: "Resources")! }
     @Test func testEPUB3RubyNavigationAndAssets() throws {
         let b = try EPUBImporter.load(sample("Sample", ext: "epub"), root: root)
-        XCTAssertEqual(b.title, "雨の日の喫茶店"); XCTAssertEqual(b.author, "SimpleReader sample")
+        XCTAssertEqual(b.title, "雨の日の喫茶店"); XCTAssertEqual(b.author, "Kanyomi sample")
         XCTAssertEqual(b.chapters.count, 2); XCTAssertEqual(b.contents.count, 2); XCTAssertTrue(b.contents[1].path.hasSuffix("#evening"))
         XCTAssertTrue(b.chapters[0].text.contains("喫茶店で過ごす午後。")); XCTAssertFalse(b.chapters[0].text.contains("きっさてん"))
         XCTAssertEqual(b.chapters[1].start, b.chapters[0].count)

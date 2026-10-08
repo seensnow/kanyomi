@@ -1,3 +1,4 @@
+import { readPreference } from './storageMigration'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import BookCover from './BookCover'
@@ -40,9 +41,9 @@ type Theme = 'light' | 'dark'
 
 function getInitialTheme(): Theme {
   try {
-    const savedTheme = localStorage.getItem('simple-reader-theme')
+    const savedTheme = readPreference('kanyomi-theme')
     if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme
-    const legacyAppearance = localStorage.getItem('simple-reader-appearance')
+    const legacyAppearance = readPreference('kanyomi-appearance')
     if (legacyAppearance && JSON.parse(legacyAppearance).theme === 'dark') return 'dark'
   } catch {
     // Use the default theme when storage is unavailable or malformed.
@@ -105,7 +106,7 @@ function App() {
 
   function changeTheme(nextTheme: Theme) {
     setTheme(nextTheme)
-    try { localStorage.setItem('simple-reader-theme', nextTheme) } catch { /* Preference is optional. */ }
+    try { localStorage.setItem('kanyomi-theme', nextTheme) } catch { /* Preference is optional. */ }
   }
 
   useEffect(() => {

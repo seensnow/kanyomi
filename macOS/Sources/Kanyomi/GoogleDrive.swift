@@ -6,16 +6,24 @@ import Network
 
 struct Keychain {
     static func get(_ key: String) -> Data? {
-        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "SimpleReaderMac", kSecAttrAccount as String: key, kSecReturnData as String: true, kSecMatchLimit as String: kSecMatchLimitOne]
-        var result: CFTypeRef?; guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else { return nil }; return result as? Data
+        for service in ["KanyomiMac", ProductMigration.legacyService] {
+            let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: key, kSecReturnData as String: true, kSecMatchLimit as String: kSecMatchLimitOne]
+            var result: CFTypeRef?
+            if SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess, let data = result as? Data { return data }
+        }
+        return nil
     }
     static func set(_ key: String, data: Data) throws {
-        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "SimpleReaderMac", kSecAttrAccount as String: key]
+        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "KanyomiMac", kSecAttrAccount as String: key]
         let status = SecItemUpdate(query as CFDictionary, [kSecValueData as String: data] as CFDictionary)
         if status == errSecItemNotFound { var add = query; add[kSecValueData as String] = data; guard SecItemAdd(add as CFDictionary, nil) == errSecSuccess else { throw ReaderError.message("Could not save Google credentials in Keychain") } }
         else if status != errSecSuccess { throw ReaderError.message("Keychain error: \(status)") }
     }
-    static func remove(_ key: String) { SecItemDelete([kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "SimpleReaderMac", kSecAttrAccount as String: key] as CFDictionary) }
+    static func remove(_ key: String) {
+        for service in ["KanyomiMac", ProductMigration.legacyService] {
+            SecItemDelete([kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: key] as CFDictionary)
+        }
+    }
 }
 struct GoogleToken: Codable { var access: String; var refresh: String; var expiry: Date }
 @MainActor final class GoogleAuthorization: ObservableObject {
@@ -25,14 +33,15 @@ struct GoogleToken: Codable { var access: String; var refresh: String; var expir
     private var token: GoogleToken?
     private var callback: OAuthLoopback?
     init() {
-        clientID = UserDefaults.standard.string(forKey: "SimpleReaderGoogleClient") ?? ""
+        ProductMigration.preferences()
+        clientID = UserDefaults.standard.string(forKey: "KanyomiGoogleClient") ?? ""
         clientSecret = ""
         // Credentials are read only on a user-initiated connection or sync.
     }
     func loadCredentials() { if token == nil, let data = Keychain.get("GoogleToken"), let value = try? JSONDecoder().decode(GoogleToken.self, from: data) { token = value; connected = true }; if clientSecret.isEmpty, let data = Keychain.get("GoogleSecret") { clientSecret = String(data: data, encoding: .utf8) ?? "" } }
     func connect() async throws {
         guard !clientID.trimmingCharacters(in: .whitespaces).isEmpty else { throw ReaderError.message("Enter a Google OAuth Desktop client ID") }
-        UserDefaults.standard.set(clientID, forKey: "SimpleReaderGoogleClient")
+        UserDefaults.standard.set(clientID, forKey: "KanyomiGoogleClient")
         if !clientSecret.isEmpty { try Keychain.set("GoogleSecret", data: Data(clientSecret.utf8)) }
         var random = [UInt8](repeating: 0, count: 32); guard SecRandomCopyBytes(kSecRandomDefault, random.count, &random) == errSecSuccess else { throw ReaderError.message("Could not generate authorization verifier") }
         let verifier = base64URL(Data(random)); let challenge = base64URL(Data(SHA256.hash(data: Data(verifier.utf8))))

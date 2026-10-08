@@ -1,3 +1,4 @@
+import { readPreference } from './storageMigration'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import ePub from '@likecoin/epub-ts'
@@ -33,7 +34,7 @@ type Selection = {
 
 function storedValue<T>(key: string, fallback: T): T {
   try {
-    const value = localStorage.getItem(key)
+    const value = readPreference(key)
     return value ? { ...fallback, ...JSON.parse(value) } : fallback
   } catch {
     return fallback
@@ -65,12 +66,12 @@ function EpubReader(props: EpubReaderProps) {
   const [showAnkiSettings, setShowAnkiSettings] = useState(false)
   const [fontSize, setFontSize] = useState(() => {
     try {
-      const savedFontSize = localStorage.getItem('simple-reader-font-size')
+      const savedFontSize = readPreference('kanyomi-font-size')
       if (savedFontSize) {
         const parsedSize = Number(savedFontSize)
         if (Number.isFinite(parsedSize)) return Math.min(36, Math.max(12, parsedSize))
       }
-      const legacy = localStorage.getItem('simple-reader-appearance')
+      const legacy = readPreference('kanyomi-appearance')
       const savedSize = legacy ? Number(JSON.parse(legacy).fontSize) : 18
       return Number.isFinite(savedSize) ? Math.min(36, Math.max(12, savedSize)) : 18
     } catch {
@@ -81,7 +82,7 @@ function EpubReader(props: EpubReaderProps) {
   const hoveredWordRef = useRef<{ key: string; query: string; sentence: string; offset?: number; displayWord: string } | null>(null)
   const lastShiftLookupRef = useRef('')
   const [ankiSettings, setAnkiSettings] = useState<AnkiSettings>(() => storedValue(
-    'simple-reader-anki-settings', defaultAnkiSettings,
+    'kanyomi-anki-settings', defaultAnkiSettings,
   ))
 
   useEffect(() => {
@@ -99,14 +100,14 @@ function EpubReader(props: EpubReaderProps) {
 
   function saveAnkiSettings(nextSettings: AnkiSettings) {
     setAnkiSettings(nextSettings)
-    localStorage.setItem('simple-reader-anki-settings', JSON.stringify(nextSettings))
+    localStorage.setItem('kanyomi-anki-settings', JSON.stringify(nextSettings))
   }
 
   function saveFontSize(nextFontSize: number) {
     const size = Math.min(36, Math.max(12, nextFontSize))
     setFontSize(size)
     appearanceRef.current = { ...appearanceRef.current, fontSize: size }
-    localStorage.setItem('simple-reader-font-size', String(size))
+    localStorage.setItem('kanyomi-font-size', String(size))
   }
 
   const applyAppearance = useCallback((rendition: Rendition) => {

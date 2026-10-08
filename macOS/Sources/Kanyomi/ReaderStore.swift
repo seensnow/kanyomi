@@ -59,9 +59,11 @@ final class ReaderStore: ObservableObject {
         state.books.filter { (selectedShelf.isEmpty || $0.shelf == selectedShelf) && (librarySearch.isEmpty || ($0.title + $0.author).localizedCaseInsensitiveContains(librarySearch)) }.sorted { sortByTitle ? $0.title.localizedStandardCompare($1.title) == .orderedAscending : $0.lastOpened > $1.lastOpened }
     }
     init(root: URL? = nil, startTimer: Bool = true) {
+        ProductMigration.preferences()
         let override = ProcessInfo.processInfo.environment["KANYOMI_DATA_DIR"] ?? ProcessInfo.processInfo.environment["SIMPLEREADER_DATA_DIR"]
-        self.rootURL = (root ?? override.map { URL(fileURLWithPath: $0) } ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("SimpleReaderMac")).standardizedFileURL
+        self.rootURL = (root ?? override.map { URL(fileURLWithPath: $0) } ?? ProductMigration.defaultLibraryRoot()).standardizedFileURL
         do {
+            try ProductMigration.prepareLibrary(at: self.root)
             try FileManager.default.createDirectory(at: self.root, withIntermediateDirectories: true)
             let file = self.root.appendingPathComponent("library.json")
             if FileManager.default.fileExists(atPath: file.path) { state = try JSONDecoder().decode(LibraryState.self, from: Data(contentsOf: file)) }
@@ -109,7 +111,7 @@ final class ReaderStore: ObservableObject {
             guard let url = Bundle.readerResources.url(forResource: "Sample", withExtension: "epub", subdirectory: "Resources"), let dictionary = Bundle.readerResources.url(forResource: "SampleDictionary", withExtension: "zip", subdirectory: "Resources") else { throw ReaderError.message("Sample resources missing") }
             let root = root; let book = try await Task.detached { try EPUBImporter.load(url, root: root) }.value
             state.books.append(book)
-            if !state.dictionaries.contains(where: { $0.title == "SimpleReader Sample Dictionary" }) { let d = try await engine.importZip(dictionary, root: root); state.dictionaries.append(d); await rebuildDictionaries() }
+            if !state.dictionaries.contains(where: { ProductMigration.isSampleDictionary($0.title) }) { let d = try await engine.importZip(dictionary, root: root); state.dictionaries.append(d); await rebuildDictionaries() }
             save(); openBook(book.id)
         }
     }
