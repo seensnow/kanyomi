@@ -11,13 +11,16 @@ enum AppLanguage {
         return language.hasPrefix("zh") && !language.hasPrefix("zh-Hant") && !language.hasPrefix("zh-TW") && !language.hasPrefix("zh-HK") ? (simplifiedChinese[key] ?? key) : key
     }
     static let simplifiedChinese: [String: String] = [
-        "Official Japanese–Chinese dictionaries": "官方日中词典",
-        "Shogakukan Japanese–Chinese · Product page": "小学馆《中日・日中辞典》第三版 · 官方产品页",
-        "Dictionaries by Monokakido · Download app": "辞書 by 物書堂 · 应用下载",
-        "Paid dictionary content for the separate Monokakido app on Mac/iOS. These links do not provide a Yomitan ZIP for import here.": "词典内容需付费，在独立的物书堂 Mac/iOS 应用中使用。这些链接不提供可在此导入的 Yomitan ZIP。",
+        "%d saved": "已保存 %d 个",
+        "Add word…": "添加单词…",
+        "Word": "单词",
+        "Word reading": "读音",
+        "Definition": "释义",
+        "Example sentence": "例句",
+        "Source": "来源",
+        "Search vocabulary": "搜索生词",
         "Bookshelves": "书架",
         "%d books · A little Japanese, every day.": "%d 本书 · 每天读一点日语。",
-        "%d saved · %d sent to Anki": "已保存 %d 个 · 已发送 %d 个到 Anki",
         "Daily reading goal: %d minutes": "每日阅读目标：%d 分钟",
         "Dictionary scan length: %d": "词典扫描长度：%d",
         "Fields: ": "字段：",

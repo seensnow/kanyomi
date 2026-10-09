@@ -296,11 +296,6 @@ struct DictionaryDownloads: View {
                     Link(L("Jitendex website"), destination: URL(string: "https://jitendex.org/pages/downloads.html")!).foregroundStyle(ReaderPalette.accent)
                     Link(L("More dictionaries"), destination: URL(string: "https://github.com/yomidevs/jmdict-yomitan")!).foregroundStyle(ReaderPalette.accent)
                 }.font(.caption)
-                Divider().padding(.vertical, 4)
-                Text(L("Official Japanese–Chinese dictionaries")).font(.headline)
-                Link(L("Shogakukan Japanese–Chinese · Product page"), destination: URL(string: "https://www.monokakido.jp/ja/dictionaries/cj3/index.html")!).foregroundStyle(ReaderPalette.accent)
-                Link(L("Dictionaries by Monokakido · Download app"), destination: URL(string: "https://www.monokakido.jp/ja/dictionaries/app/")!).foregroundStyle(ReaderPalette.accent)
-                Text(L("Paid dictionary content for the separate Monokakido app on Mac/iOS. These links do not provide a Yomitan ZIP for import here.")).font(.caption).foregroundStyle(.secondary)
             }.fixedSize(horizontal: false, vertical: true).padding(.top, 8)
         }.fixedSize(horizontal: false, vertical: true)
     }
@@ -332,21 +327,53 @@ struct VocabularyView: View {
     @Environment(\.locale) private var interfaceLocale
     @EnvironmentObject var store: ReaderStore
     @State private var search = ""
+    @State private var addingWord = false
     var words: [MinedWord] { store.state.words.reversed().filter { search.isEmpty || ($0.expression + $0.reading + $0.definition).localizedCaseInsensitiveContains(search) } }
     var body: some View {
         let _ = interfaceLocale
         VStack(alignment: .leading, spacing: 20) {
-            HStack { VStack(alignment: .leading, spacing: 7) { Text(L("Words worth keeping")).font(.system(size: 30, design: .serif)); Text(L("%d saved · %d sent to Anki", store.state.words.count, store.state.words.filter { $0.ankiID != nil }.count)).foregroundStyle(.secondary) }; Spacer(); Button(L("Export TSV…")) { store.exportVocabulary() } }
-            TextField("Search vocabulary", text: $search).textFieldStyle(.roundedBorder)
+            HStack { VStack(alignment: .leading, spacing: 7) { Text(L("Words worth keeping")).font(.system(size: 30, design: .serif)); Text(L("%d saved", store.state.words.count)).foregroundStyle(.secondary) }; Spacer(); Button(L("Add word…")) { addingWord = true }; Button(L("Export TSV…")) { store.exportVocabulary() } }
+            TextField(L("Search vocabulary"), text: $search).textFieldStyle(.roundedBorder)
             List(words) { word in
                 HStack(alignment: .top, spacing: 20) {
                     VStack(alignment: .leading, spacing: 5) { Text(word.expression).font(.title2); Text(word.reading).foregroundStyle(.secondary) }.frame(width: 150, alignment: .leading)
                     VStack(alignment: .leading, spacing: 5) { Text(word.definition).lineLimit(3); Text(word.sentence).font(.caption).foregroundStyle(.secondary).lineLimit(2); Text(word.book).font(.caption2).foregroundStyle(accent) }
-                    Spacer(); if word.ankiID != nil { Image(systemName: "checkmark.circle.fill").foregroundStyle(.green).help(L("Added to Anki")) }
+                    Spacer(); Button(role: .destructive) { store.removeVocabularyWord(word.id) } label: { Image(systemName: "trash") }.buttonStyle(.borderless).help(L("Remove saved word")).accessibilityLabel(L("Remove saved word"))
                 }.padding(.vertical, 10).textSelection(.enabled)
-                .contextMenu { Button(L("Look up")) { store.section = "Dictionary"; store.lookup(word.expression) }; Button(L("Remove saved word")) { store.state.words.removeAll { $0.id == word.id }; store.saveSoon() } }
+                .contextMenu { Button(L("Look up")) { store.section = "Dictionary"; store.lookup(word.expression) }; Button(L("Remove saved word"), role: .destructive) { store.removeVocabularyWord(word.id) } }
             }
         }.padding(30).navigationTitle(L("Vocabulary"))
+        .sheet(isPresented: $addingWord) { AddVocabularyWordView().environmentObject(store) }
+    }
+}
+struct AddVocabularyWordView: View {
+    @EnvironmentObject var store: ReaderStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var expression = ""
+    @State private var reading = ""
+    @State private var definition = ""
+    @State private var sentence = ""
+    @State private var source = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(L("Add word…")).font(.title2)
+            Form {
+                TextField(L("Word"), text: $expression)
+                TextField(L("Word reading"), text: $reading)
+                TextField(L("Definition"), text: $definition, axis: .vertical).lineLimit(3...6)
+                TextField(L("Example sentence"), text: $sentence, axis: .vertical).lineLimit(2...4)
+                TextField(L("Source"), text: $source)
+            }
+            HStack {
+                Spacer()
+                Button(L("Cancel")) { dismiss() }.keyboardShortcut(.cancelAction)
+                Button(L("Save word")) {
+                    if store.addVocabularyWord(expression: expression, reading: reading, definition: definition, sentence: sentence, source: source) { dismiss() }
+                }.keyboardShortcut(.defaultAction)
+                .disabled(expression.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }.padding(24).frame(width: 480)
     }
 }
 struct StatisticsView: View {
@@ -366,7 +393,7 @@ struct StatisticsView: View {
                     metric("READING TIME", String(format: "%.1f h", store.state.days.reduce(0) { $0 + $1.seconds } / 3600))
                     metric("CHARACTERS", store.state.days.reduce(0) { $0 + $1.characters }.formatted())
                     metric("WORDS LOOKED UP", store.state.days.reduce(0) { $0 + $1.lookups }.formatted())
-                    metric("ANKI NOTES", store.state.words.filter { $0.ankiID != nil }.count.formatted())
+                    metric("ANKI NOTES", store.state.days.reduce(0) { $0 + $1.cards }.formatted())
                 }
                 Text(L("Reading minutes")).font(.headline)
                 Chart(days) { day in BarMark(x: .value("Date", String(day.id.suffix(5))), y: .value("Minutes", day.minutes)).foregroundStyle(accent.gradient) }.frame(height: 240)

@@ -95,7 +95,6 @@ struct MinedWord: Codable, Identifiable {
     var definition: String
     var book: String
     var created = Date()
-    var ankiID: Int64?
 }
 struct FieldMapping: Codable, Identifiable, Equatable {
     var id = UUID()

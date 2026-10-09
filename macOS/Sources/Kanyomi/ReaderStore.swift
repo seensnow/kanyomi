@@ -258,7 +258,7 @@ final class ReaderStore: ObservableObject {
     func mine(_ result: WordResult, toAnki: Bool) {
         let miningSentence = sentence; let miningSelection = popupSelectionText; let miningBook = book; let glossaryIndex = selectedGlossary
         run(toAnki ? "Adding note to Anki…" : "Saving word…") { [self] in
-            var word = MinedWord(expression: result.expression, reading: result.reading, sentence: miningSentence, definition: result.glossaries.map(\.plain).joined(separator: "\n"), book: miningBook?.title ?? "Dictionary")
+            let word = MinedWord(expression: result.expression, reading: result.reading, sentence: miningSentence, definition: result.glossaries.map(\.plain).joined(separator: "\n"), book: miningBook?.title ?? "Dictionary")
             if toAnki {
                 let client = AnkiClient(preferences)
                 var media: [String: String] = [:]
@@ -293,10 +293,22 @@ final class ReaderStore: ObservableObject {
                 for mapping in preferences.mappings where !mapping.field.isEmpty { fields[mapping.field] = try CardTemplate.render(mapping.template, result: prepared, sentence: miningSentence, selection: miningSelection, title: word.book, dictionaries: state.dictionaries, media: media, selectedGlossary: chosen) }
                 guard !fields.isEmpty else { throw ReaderError.message("Configure Anki field mappings in Settings") }
                 let note: [String: Any] = ["deckName": preferences.ankiDeck, "modelName": preferences.ankiModel, "fields": fields, "tags": preferences.ankiTags.split(separator: " ").map(String.init), "options": ["allowDuplicate": preferences.allowDuplicates]]
-                let response = try await client.request("addNote", ["note": note]); guard let id = response as? NSNumber else { throw ReaderError.message("Anki did not return a note ID") }; word.ankiID = id.int64Value; record(cards: 1)
+                let response = try await client.request("addNote", ["note": note]); guard response is NSNumber else { throw ReaderError.message("Anki did not return a note ID") }; record(cards: 1)
             }
             state.words.append(word); save(); message = toAnki ? "Added to Anki" : "Saved to vocabulary"
         }
+    }
+    @discardableResult
+    func addVocabularyWord(expression: String, reading: String, definition: String, sentence: String, source: String) -> Bool {
+        let expression = expression.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !expression.isEmpty else { return false }
+        state.words.append(MinedWord(expression: expression, reading: reading.trimmingCharacters(in: .whitespacesAndNewlines), sentence: sentence, definition: definition, book: source))
+        save()
+        return true
+    }
+    func removeVocabularyWord(_ id: UUID) {
+        state.words.removeAll { $0.id == id }
+        save()
     }
     func exportVocabulary() {
         let panel = NSSavePanel(); panel.nameFieldStringValue = "Kanyomi-vocabulary.tsv"

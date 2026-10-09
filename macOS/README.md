@@ -71,3 +71,5 @@ Kanyomi uses its own storage and bundle identifiers. Existing libraries and brow
 The 「簡」 logo uses the user-supplied 青柳衡山 calligraphy PNG across the native icon/sidebar and web brand/favicon. The original source pixels, transparency and proportions are preserved; rendered marks use burnt orange (#c77c5c) and center the visible ink using the new image’s ink bounds and visual center. No installed font is required.
 
 The native app uses dark chrome with burnt-orange accents throughout navigation, controls, statistics and dictionary content. New reading preferences default to Night; the reader still supports Paper, White and Custom page themes. Web defaults to dark and uses the same orange accents in both selectable themes.
+
+Vocabulary supports **Add word…** for manual entry, a visible delete button for each row, search and TSV export. Saved words do not track Anki note IDs or display sent-to-Anki badges. Existing vocabulary remains compatible; Anki mining and aggregate card statistics continue to work. Dictionary recommendations show compatible Yomitan downloads.

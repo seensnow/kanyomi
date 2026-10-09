@@ -1,5 +1,12 @@
 # Changelog
 
+## macOS vocabulary management — 2026-10-09
+
+- Remove the official Japanese–Chinese / Monokakido promotional block from Dictionary and Settings.
+- Add a manual vocabulary form for word, reading, definition, example sentence and source, with a visible delete button on each saved word. Keep lookup saving, context-menu deletion, search and TSV export.
+- Stop persisting per-word Anki note IDs and remove sent-to-Anki counts/badges. Existing saved words still load; old note IDs are discarded when saving. Anki mining remains available, and aggregate card statistics use daily activity records so vocabulary deletion does not change their count.
+- Validation: 24 native tests pass, including manual vocabulary validation/persistence, deletion by identity, and decoding/re-encoding legacy Anki IDs. Release packaging and strict signature verification pass. Initial sandboxed WebKit checks failed to start helper processes; the complete suite passes outside the sandbox. Interactive form validation is unverified because UI automation resolves Kanyomi to its obsolete bundle identifier; live Anki was not repeated.
+
 ## Kanyomi naming completion — 2026-10-08
 
 - Use Kanyomi for sample book/dictionary metadata, native data folder, bundle identifier, Google client setting and Keychain writes; use kanyomi for browser databases, preferences and folder-picker identity. Copy browser data atomically on first access and preserve the old database; move the default native library on first launch, preserve explicit data-directory overrides, and read old preferences/credentials for compatibility. Legacy identifiers remain only in upgrade and generated-package cleanup code.

@@ -116,6 +116,30 @@ final class ReaderTests {
         store.updatePosition(3000, count: b.chapters[0].count, reading: true); XCTAssertEqual(store.state.days.first?.characters, 40)
         store.moveChapter(1); XCTAssertEqual(store.book?.chapter, 1); XCTAssertEqual(store.book?.offset, 0)
     }
+    @Test @MainActor func testVocabularyAddRemoveAndLegacyAnkiStatus() throws {
+        let store = ReaderStore(root: root, startTimer: false)
+        XCTAssertFalse(store.addVocabularyWord(expression: " \n ", reading: "", definition: "", sentence: "", source: ""))
+        XCTAssertTrue(store.addVocabularyWord(expression: " 雨 ", reading: " あめ ", definition: "rain", sentence: "雨が降る。", source: "My notes"))
+        XCTAssertTrue(store.addVocabularyWord(expression: "雨", reading: "", definition: "", sentence: "", source: ""))
+        let restored = ReaderStore(root: root, startTimer: false)
+        XCTAssertEqual(restored.state.words.count, 2)
+        XCTAssertEqual(restored.state.words.first?.expression, "雨")
+        XCTAssertEqual(restored.state.words.first?.reading, "あめ")
+        XCTAssertEqual(restored.state.words.first?.definition, "rain")
+        XCTAssertEqual(restored.state.words.first?.sentence, "雨が降る。")
+        XCTAssertEqual(restored.state.words.first?.book, "My notes")
+        let word = restored.state.words[0]
+        var legacy = try JSONSerialization.jsonObject(with: JSONEncoder().encode(word)) as! [String: Any]
+        legacy["ankiID"] = 123456
+        let decoded = try JSONDecoder().decode(MinedWord.self, from: JSONSerialization.data(withJSONObject: legacy))
+        XCTAssertEqual(decoded.id, word.id)
+        let rewritten = try JSONSerialization.jsonObject(with: JSONEncoder().encode(decoded)) as! [String: Any]
+        #expect(rewritten["ankiID"] == nil)
+        restored.removeVocabularyWord(word.id)
+        let afterRemoval = ReaderStore(root: root, startTimer: false)
+        XCTAssertEqual(afterRemoval.state.words.count, 1)
+        XCTAssertEqual(afterRemoval.state.words.first?.id, restored.state.words.first?.id)
+    }
     @Test func testAnkiConnectProtocolAndErrorPropagation() async throws {
         let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [AnkiMock.self]
         let session = URLSession(configuration: config); var p = Preferences(); p.ankiKey = "test-key"
