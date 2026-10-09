@@ -1,49 +1,939 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #333333;
+  background: #f3efed;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  min-width: 320px;
+  min-height: 100vh;
 }
 
-.app {
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-dark {
+  color: #f3efed;
+  background: #1b1b1b;
+}
+
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
-  min-height: 99vh;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  padding: 0 40px;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid #f3efed;
+  box-shadow: 0 2px 12px rgba(36, 49, 68, 0.06);
 }
 
-.app aside {
-  width: 220px;
-  padding: 24px;
-  background: #f5f1e8;
-  border-right: 1px solid #ddd6c8;
-}
-
-.app main {
-  flex: 1;
-  padding: 32px;
-}
-
-.reader-content {
-  max-width: 720px;
-  margin: 0 auto;
-  line-height: 1.7;
-}
-
-.app aside button {
-  display: block;
-  width: 100%;
-  margin-bottom: 12px;
-  padding: 12px;
-  text-align: left;
-  background: white;
-  border: 1px solid #d8d0c2;
-  border-radius: 6px;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  background: transparent;
+  border: 0;
   cursor: pointer;
 }
 
-.app aside button:hover {
-  background: #ebe4d7;
+.brand {
+  color: #c77c5c;
+  font-size: 20px;
+  font-weight: 750;
 }
 
-.app aside button.selected {
-  background: #ddd1bd;
-  border-color: #9c896d;
-  font-weight: bold;
+.brand-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: #c77c5c;
+  background: #252525;
+  border-radius: 11px;
 }
+
+.brand-mark img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.global-theme-button {
+  padding: 9px 14px;
+  color: #c77c5c;
+  font-weight: 700;
+  background: #f3efed;
+  border: 1px solid #f3efed;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.app-dark .global-theme-button,
+.app-dark .reader-tool-button,
+.app-dark .back-button,
+.app-dark .reader-setting-options button,
+.app-dark .dictionary-import-button,
+.app-dark .anki-test-button {
+  color: #f3efed;
+  background: #393939;
+  border-color: #645a55;
+}
+
+.app-dark .global-theme-button:hover,
+.app-dark .reader-tool-button:hover,
+.app-dark .back-button:hover,
+.app-dark .reader-setting-options button:hover:not(:disabled),
+.app-dark .dictionary-import-button:hover,
+.app-dark .anki-test-button:hover {
+  background: #494949;
+  border-color: #a99e98;
+}
+
+.app-dark .top-bar {
+  background: rgba(37, 37, 37, 0.97);
+  border-bottom-color: #3f3f3f;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+.app-dark .library-toolbar {
+  border-bottom-color: #3f3f3f;
+}
+
+.app-dark .library-toolbar h1,
+.app-dark .card-title,
+.app-dark .empty-library h2 {
+  color: #f3efed;
+}
+
+.app-dark .library-summary,
+.app-dark .compatibility-note,
+.app-dark .card-date,
+.app-dark .empty-library {
+  color: #f6eae4;
+}
+
+.app-dark .library-search {
+  color: #f3efed;
+  background: #2a2a2a;
+  border-color: #4d4d4d;
+}
+
+.app-dark .book-cover-image {
+  background: #2a2a2a;
+}
+
+.app-dark .empty-book {
+  color: #f6eae4;
+  background: #2a2a2a;
+  border-color: #3f3f3f;
+}
+
+.library-page {
+  width: min(1440px, calc(100% - 64px));
+  margin: 0 auto;
+  padding: 52px 0 72px;
+}
+
+.library-toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 32px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #e8e5e2;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #c77c5c;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.library-toolbar h1 {
+  margin: 0;
+  color: #2a2a2a;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.1;
+}
+
+.library-summary {
+  margin: 12px 0 0;
+  color: #a99e98;
+}
+
+.library-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.library-search {
+  width: 240px;
+  padding: 12px 14px;
+  background: white;
+  border: 1px solid #e8e5e2;
+  border-radius: 12px;
+  outline: none;
+}
+
+.library-search:focus {
+  border-color: #c77c5c;
+  box-shadow: 0 0 0 3px rgba(55, 125, 246, 0.13);
+}
+
+.import-button,
+.folder-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px 18px;
+  font-weight: 700;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.import-button {
+  color: white;
+  background: #c77c5c;
+  box-shadow: 0 8px 20px rgba(255, 122, 61, 0.22);
+}
+
+.import-button:hover {
+  background: #b66b4d;
+}
+
+.import-button.is-busy {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.visually-hidden-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.folder-button {
+  color: #c77c5c;
+  background: #f3efed;
+  border: 1px solid #f3efed;
+}
+
+.folder-button:hover:not(:disabled) {
+  background: #f3efed;
+}
+
+.folder-button:disabled {
+  color: #a99e98;
+  background: #f3efed;
+  border-color: #e8e5e2;
+  cursor: not-allowed;
+}
+
+.compatibility-note {
+  margin: 18px 0 0;
+  color: #645a55;
+  font-size: 14px;
+}
+
+.status-message {
+  margin: 20px 0 0;
+  padding: 12px 16px;
+  color: #8a5417;
+  background: #fff3db;
+  border-radius: 10px;
+}
+
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 42px 34px;
+  padding-top: 40px;
+}
+
+.book-card {
+  min-width: 0;
+}
+
+.book-open-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.book-open-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.book-manage-button {
+  margin-top: 10px;
+  padding: 4px 0;
+  color: #645a55;
+  font-size: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.book-manage-button:hover {
+  color: #b64e3a;
+  text-decoration: underline;
+}
+
+.app-dark .book-manage-button {
+  color: #f6eae4;
+}
+
+.book-cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  padding: 22px;
+  overflow: hidden;
+  color: white;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.3), transparent 26%),
+    linear-gradient(145deg, #c77c5c, #c77c5c 62%, #645a55);
+  border-radius: 5px 14px 14px 5px;
+  box-shadow: 0 16px 28px rgba(31, 52, 93, 0.2);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.book-cover::before {
+  position: absolute;
+  inset: 0 auto 0 9px;
+  width: 2px;
+  content: "";
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.book-open-button:hover .book-cover {
+  transform: translateY(-5px);
+  box-shadow: 0 22px 34px rgba(31, 52, 93, 0.28);
+}
+
+.file-type {
+  position: relative;
+  z-index: 2;
+  align-self: flex-start;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 999px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.32);
+}
+
+.cover-title {
+  position: relative;
+  z-index: 1;
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: clamp(18px, 2vw, 25px);
+  font-weight: 800;
+  line-height: 1.15;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+
+.book-cover-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  object-fit: contain;
+  background: #f3efed;
+}
+
+.card-title,
+.card-date,
+.source-badge {
+  display: block;
+}
+
+.card-title {
+  margin-top: 16px;
+  overflow: hidden;
+  color: #333333;
+  font-size: 16px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-date {
+  margin-top: 6px;
+  overflow: hidden;
+  color: #a99e98;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.source-badge {
+  width: fit-content;
+  margin-top: 8px;
+  padding: 3px 8px;
+  color: #645a55;
+  font-size: 11px;
+  font-weight: 750;
+  background: #f3efed;
+  border-radius: 999px;
+}
+
+.source-badge.linked {
+  color: #c77c5c;
+  background: #f3efed;
+}
+
+.empty-library {
+  display: grid;
+  min-height: 420px;
+  place-items: center;
+  align-content: center;
+  color: #a99e98;
+  text-align: center;
+}
+
+.empty-library h2 {
+  margin: 22px 0 0;
+  color: #434343;
+}
+
+.empty-library p {
+  margin: 8px 0 0;
+}
+
+.empty-book {
+  display: grid;
+  width: 120px;
+  height: 156px;
+  place-items: center;
+  color: #a99e98;
+  font-size: 14px;
+  font-weight: 800;
+  background: white;
+  border: 1px solid #e8e5e2;
+  border-radius: 3px 9px 9px 3px;
+  box-shadow: 0 14px 28px rgba(42, 60, 89, 0.12);
+}
+
+.reader-page {
+  padding: 32px;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.reader-dark {
+  color: #f3efed;
+  background: #1b1b1b;
+}
+
+.reader-dark .reader-heading h1,
+.reader-dark .reader-hint {
+  color: #f3efed;
+}
+
+.reader-dark .epub-viewer {
+  background: #252525;
+  border-color: #3f3f3f;
+}
+
+.reader-content {
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.reader-heading {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.reader-heading h1 {
+  flex: 1;
+  margin: 0;
+  overflow: hidden;
+  font-size: 22px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chapter-picker {
+  max-width: 220px;
+  padding: 9px 12px;
+  color: #c77c5c;
+  background: #f3efed;
+  border: 1px solid #f3efed;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.app-dark .chapter-picker {
+  color: #f3efed;
+  background: #393939;
+  border-color: #645a55;
+}
+
+.book-open-button:focus-visible,
+.book-manage-button:focus-visible,
+.chapter-picker:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #c77c5c;
+  outline-offset: 3px;
+}
+
+.reader-tool-button,
+.anki-test-button {
+  padding: 9px 13px;
+  color: #c77c5c;
+  font-weight: 700;
+  background: #f3efed;
+  border: 1px solid #f3efed;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.reader-settings-panel {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 16px;
+  padding: 16px 20px;
+  background: white;
+  border: 1px solid #e8e5e2;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(35, 49, 73, 0.08);
+}
+
+.reader-dark .reader-settings-panel,
+.reader-dark .anki-settings-panel {
+  color: #f3efed;
+  background: #2a2a2a;
+  border-color: #3f3f3f;
+}
+
+.reader-setting-group {
+  display: grid;
+  gap: 8px;
+}
+
+.reader-setting-group > span {
+  color: #645a55;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.reader-dark .reader-setting-group > span {
+  color: #f6eae4;
+}
+
+.reader-setting-options {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reader-setting-options button {
+  min-width: 42px;
+  padding: 7px 10px;
+  background: white;
+  border: 1px solid #e8e5e2;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.reader-setting-options button.selected {
+  color: #c77c5c;
+  background: #f3efed;
+  border-color: #f6eae4;
+}
+
+.reader-setting-options button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.reader-setting-options output {
+  min-width: 48px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.dictionary-import-group {
+  display: grid;
+  gap: 5px;
+  margin-left: auto;
+  color: #645a55;
+  font-size: 12px;
+}
+
+.dictionary-import-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 12px;
+  color: #c77c5c;
+  font-weight: 700;
+  background: #f3efed;
+  border: 1px solid #f3efed;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.dictionary-import-group p {
+  max-width: 380px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.reader-hint {
+  margin: 0 0 10px;
+  color: #645a55;
+  font-size: 13px;
+}
+
+.reader-loading,
+.reader-error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 9px;
+}
+
+.reader-loading {
+  color: #c77c5c;
+  background: #f3efed;
+}
+
+.reader-error {
+  color: #9c3d30;
+  background: #fff0ec;
+}
+
+.reader-workspace {
+  position: relative;
+}
+
+.back-button,
+.close-button {
+  padding: 9px 13px;
+  background: white;
+  border: 1px solid #e8e5e2;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.back-button:hover,
+.close-button:hover {
+  background: #f3efed;
+}
+
+.epub-viewer {
+  position: relative;
+  height: calc(100vh - 190px);
+  min-height: 560px;
+  overflow: auto;
+  background: white;
+  border: 1px solid #e8e5e2;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(35, 49, 73, 0.1);
+}
+
+.reader-dark .dictionary-panel {
+  color: #f3efed;
+  background: rgba(48, 48, 48, 0.98);
+  border-color: #4f4f4f;
+}
+
+.reader-dark .dictionary-reading,
+.reader-dark .dictionary-source,
+.reader-dark .dictionary-message,
+.reader-dark .anki-status {
+  color: #f6eae4;
+}
+
+.reader-dark .sentence-context {
+  background: #1b1b1b;
+}
+
+.dictionary-panel {
+  position: absolute;
+  z-index: 4;
+  top: 18px;
+  right: 18px;
+  width: min(360px, calc(100% - 36px));
+  max-height: calc(100% - 36px);
+  padding: 22px;
+  overflow: auto;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #e8e5e2;
+  border-radius: 16px;
+  box-shadow: 0 22px 55px rgba(31, 48, 78, 0.2);
+}
+
+.dictionary-heading,
+.anki-settings-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dictionary-heading button,
+.anki-settings-heading button {
+  padding: 0;
+  color: #a99e98;
+  font-size: 24px;
+  line-height: 1;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.dictionary-label {
+  color: #c77c5c;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.dictionary-panel h2 {
+  margin: 12px 0 0;
+  font-size: 29px;
+}
+
+.dictionary-reading,
+.dictionary-source,
+.anki-settings-heading p {
+  margin: 5px 0 0;
+  color: #645a55;
+}
+
+.definition-list {
+  margin: 18px 0;
+  padding-left: 22px;
+}
+
+.definition-list li + li {
+  margin-top: 10px;
+}
+
+.dictionary-source {
+  font-size: 12px;
+}
+
+.dictionary-message,
+.anki-status {
+  color: #645a55;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sentence-context {
+  margin: 18px 0;
+  padding: 13px 14px;
+  background: #f3efed;
+  border-radius: 10px;
+}
+
+.sentence-context span {
+  color: #a99e98;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sentence-context p {
+  margin: 6px 0 0;
+  font-family: Georgia, serif;
+  line-height: 1.55;
+}
+
+.add-to-anki-button {
+  width: 100%;
+  padding: 11px 16px;
+  color: white;
+  font-weight: 750;
+  background: #c77c5c;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.add-to-anki-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.anki-settings-panel {
+  margin-bottom: 18px;
+  padding: 20px;
+  background: white;
+  border: 1px solid #e8e5e2;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(35, 49, 73, 0.08);
+}
+
+.anki-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.anki-settings-grid label {
+  display: grid;
+  gap: 6px;
+}
+
+.anki-settings-grid span {
+  color: #645a55;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.anki-settings-grid input {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid #e8e5e2;
+  border-radius: 8px;
+}
+
+.epub-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+@media (max-width: 760px) {
+  .top-bar {
+    padding: 0 18px;
+  }
+
+  .library-page {
+    width: min(100% - 32px, 1440px);
+    padding-top: 32px;
+  }
+
+  .library-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .library-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .library-search {
+    width: 100%;
+  }
+
+  .import-button,
+  .folder-button {
+    justify-content: center;
+  }
+
+  .book-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 18px;
+  }
+
+  .reader-page {
+    padding: 18px 12px;
+  }
+
+  .reader-heading {
+    flex-wrap: wrap;
+  }
+
+  .reader-heading h1 {
+    order: 3;
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .chapter-picker {
+    max-width: calc(100% - 24px);
+  }
+
+  .anki-settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reader-settings-panel {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .epub-viewer {
+    height: calc(100vh - 220px);
+    min-height: 460px;
+  }
+
+  .dictionary-import-group {
+    margin-left: 0;
+  }
+}
+
+/* Black and burnt-orange chrome, including panels rendered outside the EPUB. */
+.app-dark { color: #e8e5e2; background: #252525; color-scheme: dark; }
+.app-dark .brand, .app-dark .dictionary-label, .app-dark .library-toolbar h1,
+.app-dark .chapter-badge { color: #e3a07d; }
+.app-dark .dictionary-panel, .app-dark .anki-settings-panel,
+.app-dark .reader-settings-panel, .app-dark .chapter-menu,
+.app-dark .epub-viewer { background: #303030; border-color: #48413d; }
+.app-dark .sentence-context, .app-dark .global-theme-button,
+.app-dark .reader-tool-button, .app-dark .back-button,
+.app-dark .reader-setting-options button, .app-dark .dictionary-import-button,
+.app-dark .anki-test-button { color: #e3a07d; background: #3c302a; border-color: #645047; }
+.app-dark input, .app-dark select { color: #e8e5e2; background: #252525; border-color: #48413d; }
+.app-dark .chapter-menu-item:hover { background: #3c302a; }
+.app-dark .dictionary-reading, .app-dark .dictionary-source,
+.app-dark .dictionary-message, .app-dark .anki-status,
+.app-dark .anki-settings-grid span, .app-dark .anki-settings-heading p { color: #b5aaa3; }
+::selection { background: #c77c5c66; }
