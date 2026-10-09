@@ -1,5 +1,11 @@
 # Changelog
 
+## Repository rename and protection — 2026-10-09
+
+- Rename the GitHub repository to `seensnow/kanyomi`, make it public at the owner’s request, and update the local origin URL and documentation.
+- Protect main: require pull requests, current-base `web` and `macos` checks from GitHub Actions, and resolved review conversations; enforce for administrators and disable force pushes/deletion. No additional approving reviewer is required for this personal project.
+- Validation: anonymous API access confirms the repository is public; GitHub reports main protected and returns the requested rules. `git diff --check` passes. Documentation-only change; previous application checks remain recorded below. No merge or release performed.
+
 ## macOS vocabulary management — 2026-10-09
 
 - Remove the official Japanese–Chinese / Monokakido promotional block from Dictionary and Settings.

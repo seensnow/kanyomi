@@ -40,3 +40,5 @@ The 「簡」 logo uses the user-supplied 青柳衡山 calligraphy PNG across th
 The native app uses dark chrome with burnt-orange accents throughout navigation, controls, statistics and dictionary content. New reading preferences default to Night; the reader still supports Paper, White and Custom page themes. Web defaults to dark and uses the same orange accents in both selectable themes.
 
 2026-10-09 vocabulary update: 24 native tests pass, including manual entry persistence, blank-word rejection, deletion by identity and legacy Anki ID compatibility. Release packaging and strict signature verification pass. The form has not been checked interactively because UI automation resolves the app to its obsolete bundle identifier; live Anki was not repeated.
+
+Repository: [seensnow/kanyomi](https://github.com/seensnow/kanyomi) is public. Main requires passing browser and native CI through a pull request; force pushes and branch deletion are disabled.

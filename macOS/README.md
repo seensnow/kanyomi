@@ -73,3 +73,5 @@ The 「簡」 logo uses the user-supplied 青柳衡山 calligraphy PNG across th
 The native app uses dark chrome with burnt-orange accents throughout navigation, controls, statistics and dictionary content. New reading preferences default to Night; the reader still supports Paper, White and Custom page themes. Web defaults to dark and uses the same orange accents in both selectable themes.
 
 Vocabulary supports **Add word…** for manual entry, a visible delete button for each row, search and TSV export. Saved words do not track Anki note IDs or display sent-to-Anki badges. Existing vocabulary remains compatible; Anki mining and aggregate card statistics continue to work. Dictionary recommendations show compatible Yomitan downloads.
+
+Repository: [seensnow/kanyomi](https://github.com/seensnow/kanyomi), publicly available. Native CI is required before merging into main.

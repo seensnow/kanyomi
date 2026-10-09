@@ -1,5 +1,7 @@
 # Kanyomi beta
 
+Repository: [seensnow/kanyomi](https://github.com/seensnow/kanyomi) (public). The main branch requires pull requests, passing `web` and `macos` CI checks against the current base, and resolved review conversations. These rules include administrators; force pushes and branch deletion are disabled.
+
 The app mark is the Japanese kanji **簡**. The display and internal project name is **Kanyomi**.
 
 A local-first EPUB reader for the browser. Import books into this browser, or link an EPUB folder where the File System Access API is supported. Books and imported dictionaries are stored in IndexedDB; appearance and Anki settings are stored in localStorage.
