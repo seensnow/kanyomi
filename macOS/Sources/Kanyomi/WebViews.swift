@@ -1,0 +1,182 @@
+import SwiftUI
+import WebKit
+import UniformTypeIdentifiers
+
+struct ReaderWebView: NSViewRepresentable {
+    @EnvironmentObject var store: ReaderStore
+    let book: Book
+    func makeCoordinator() -> Coordinator { Coordinator(store) }
+    func makeNSView(context: Context) -> WKWebView {
+        let config = WKWebViewConfiguration()
+        let jsURL = Bundle.readerResources.url(forResource: "reader", withExtension: "js", subdirectory: "Resources")!
+        config.userContentController.addUserScript(WKUserScript(source: (try? String(contentsOf: jsURL)) ?? "", injectionTime: .atDocumentEnd, forMainFrameOnly: true))
+        config.userContentController.add(context.coordinator, name: "reader")
+        config.websiteDataStore = .nonPersistent()
+        let web = WKWebView(frame: .zero, configuration: config); web.navigationDelegate = context.coordinator; context.coordinator.web = web
+        web.setValue(false, forKey: "drawsBackground"); return web
+    }
+    func updateNSView(_ web: WKWebView, context: Context) {
+        let c = context.coordinator; c.store = store
+        guard book.chapters.indices.contains(book.chapter), let root = store.contentRoot else { return }
+        let path = root.appendingPathComponent(book.chapters[book.chapter].path)
+        let key = "\(book.id):\(book.chapter)"
+        if c.chapterKey != key {
+            c.furiganaTask?.cancel()
+            c.chapterKey = key; c.lookupMarkKey = ""; c.ready = false; c.revision = store.navigationRevision
+            do {
+                let html = try String(contentsOf: path, encoding: .utf8)
+                let document = ReaderHTML.prepare(html)
+                let rendered = path.deletingLastPathComponent().appendingPathComponent(".sr-\(book.chapter).html")
+                try document.write(to: rendered, atomically: true, encoding: .utf8)
+                web.loadFileURL(rendered, allowingReadAccessTo: root)
+            } catch { store.error = error.localizedDescription }
+            return
+        }
+        guard c.ready else { return }
+        c.configure()
+        if c.revision != store.navigationRevision { c.revision = store.navigationRevision; c.restore() }
+        let markKey = store.state.passages.filter { $0.bookID == book.id && $0.chapter == book.chapter && $0.kind == "highlight" }.map { $0.id.uuidString + $0.text }.joined()
+        if markKey != c.marksKey { c.marksKey = markKey; c.marks() }
+        c.lookupMark()
+    }
+    static func dismantleNSView(_ nsView: WKWebView, coordinator: Coordinator) { coordinator.furiganaTask?.cancel(); nsView.configuration.userContentController.removeScriptMessageHandler(forName: "reader"); nsView.stopLoading() }
+    @MainActor final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
+        var store: ReaderStore
+        weak var web: WKWebView?
+        var chapterKey = ""; var ready = false; var revision = -1; var preferencesKey = ""; var marksKey = ""; var lookupMarkKey = ""
+        var typographyKey = ""
+        var fontFallbacks: [[String: String]] = []
+        var furiganaTask: Task<Void, Never>?
+        init(_ store: ReaderStore) { self.store = store }
+        func configure() {
+            let p = store.preferences
+            if p.autoFurigana != true || !p.showRuby { furiganaTask?.cancel() }
+            let key = chapterKey + ":" + p.font
+            if typographyKey != key {
+                typographyKey = key
+                let text = store.book.flatMap { $0.chapters.indices.contains($0.chapter) ? $0.chapters[$0.chapter].text : nil } ?? ""
+                fontFallbacks = ReaderTypography.fallbacks(font: p.font, text: text)
+            }
+            let value = jsonString(["chapterKey": chapterKey, "vertical": p.vertical, "font": p.font, "fontFallbacks": fontFallbacks, "fontSize": p.fontSize, "lineHeight": p.lineHeight, "background": p.background, "foreground": p.foreground, "showRuby": p.showRuby, "autoFurigana": p.autoFurigana == true, "customCSS": p.customCSS, "scanLength": p.scanLength])
+            guard value != preferencesKey else { return }; preferencesKey = value
+            web?.evaluateJavaScript("window.sr?.configure(\(value));")
+            if let book = store.book { web?.evaluateJavaScript("setTimeout(()=>window.sr?.restore(\(book.offset),null),200)") }
+        }
+        func restore() { web?.evaluateJavaScript("window.sr?.restore(\(store.jumpOffset ?? store.book?.offset ?? 0),\(jsonString(store.jumpFragment as Any? ?? NSNull())));") }
+        func marks() { let passages = store.state.passages.filter { $0.bookID == store.book?.id && $0.chapter == store.book?.chapter && $0.kind == "highlight" }.map { ["offset": $0.offset, "text": $0.text] as [String: Any] }; web?.evaluateJavaScript("window.sr?.marks(\(jsonString(passages)))") }
+        func lookupMark() {
+            guard !store.searching else { return }
+            let length = store.lookupChapterKey == chapterKey ? (store.activeResult?.matched.utf16.count ?? 0) : 0
+            let key = "\(store.lookupGeneration):\(store.selectionOffset):\(length):\(store.lookupChapterKey ?? "")"
+            guard lookupMarkKey != key else { return }; lookupMarkKey = key
+            web?.evaluateJavaScript("window.sr?.lookupHighlight(\(store.selectionOffset),\(length))")
+        }
+        func generateFurigana(_ data: [String: Any]) {
+            guard ready, data["chapter"] as? String == chapterKey,
+                  store.preferences.autoFurigana == true, store.preferences.showRuby,
+                  let request = data["request"] as? Int, let input = data["blocks"] as? [[String: Any]] else { return }
+            let blocks = input.compactMap { item -> FuriganaBlock? in
+                guard let id = item["id"] as? Int, let text = item["text"] as? String else { return nil }
+                return FuriganaBlock(id: id, text: text, language: item["language"] as? String)
+            }
+            let chapter = chapterKey
+            furiganaTask?.cancel()
+            let worker = Task.detached(priority: .userInitiated) { FuriganaGenerator.annotate(blocks) }
+            furiganaTask = Task { [weak self, weak web] in
+                let annotations = await withTaskCancellationHandler(operation: { await worker.value }, onCancel: { worker.cancel() })
+                guard !Task.isCancelled, let self, let web, self.chapterKey == chapter,
+                      self.store.preferences.autoFurigana == true, self.store.preferences.showRuby else { return }
+                _ = try? await web.evaluateJavaScript("window.sr?.applyFurigana(\(request),\(jsonString(annotations.map(\.json))),\(jsonString(chapter)))")
+            }
+        }
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            guard let data = message.body as? [String: Any], let type = data["type"] as? String else { return }
+            switch type {
+            case "ready": ready = true; preferencesKey = ""; configure(); restore(); marks(); lookupMark()
+            case "furigana": generateFurigana(data)
+            case "position": store.updatePosition(data["offset"] as? Int ?? 0, count: data["count"] as? Int ?? 0, reading: data["reading"] as? Bool ?? false)
+            case "lookup": store.lookup(data["text"] as? String ?? "", sentence: data["sentence"] as? String ?? "", offset: data["offset"] as? Int ?? 0, fromBook: true)
+            case "activity": store.activity()
+            case "link": if let href = data["href"] as? String, let url = URL(string: href), url.isFileURL, let root = store.contentRoot, url.path.hasPrefix(root.path + "/") { store.navigate(path: String(url.path.dropFirst(root.path.count + 1)) + (url.fragment.map { "#" + $0 } ?? "")) }
+            default: break
+            }
+        }
+        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { store.error = "Could not display chapter: \(error.localizedDescription)" }
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            if navigationAction.navigationType == .linkActivated { decisionHandler(.cancel) } else { decisionHandler(.allow) }
+        }
+    }
+}
+struct GlossaryWebView: NSViewRepresentable {
+    static let matchScript = "document.addEventListener('click',event=>{const button=event.target.closest('[data-select-match]');if(button)window.webkit.messageHandlers.glossaryMatch.postMessage(Number(button.dataset.selectMatch));})"
+    static let selectionScript = "document.addEventListener('mouseup',()=>{const selection=window.getSelection();const text=selection.toString();const node=selection.anchorNode;const card=(node?.nodeType===1?node:node?.parentElement)?.closest('[data-match]');window.webkit.messageHandlers.glossarySelection.postMessage({text,match:text&&card?Number(card.dataset.match):null});})"
+    let html: String
+    let css: String
+    let engine: DictionaryEngine
+    let theme: String
+    var onSelection: (String) -> Void = { _ in }
+    var selectedMatch = 0
+    var onMatch: (Int) -> Void = { _ in }
+    func makeCoordinator() -> MediaHandler { MediaHandler(engine, onSelection: onSelection) }
+    func makeNSView(context: Context) -> WKWebView {
+        let config = WKWebViewConfiguration(); config.websiteDataStore = .nonPersistent(); config.userContentController.add(context.coordinator, name: "glossarySelection"); config.userContentController.addUserScript(WKUserScript(source: Self.selectionScript, injectionTime: .atDocumentEnd, forMainFrameOnly: true)); config.userContentController.add(context.coordinator, name: "glossaryMatch"); config.userContentController.addUserScript(WKUserScript(source: Self.matchScript, injectionTime: .atDocumentEnd, forMainFrameOnly: true)); config.setURLSchemeHandler(context.coordinator, forURLScheme: "dictmedia")
+        let web = WKWebView(frame: .zero, configuration: config); web.setValue(false, forKey: "drawsBackground"); web.navigationDelegate = context.coordinator; return web
+    }
+    func updateNSView(_ web: WKWebView, context: Context) {
+        context.coordinator.onMatch = onMatch
+        context.coordinator.onSelection = onSelection
+        if context.coordinator.selectedMatch != selectedMatch {
+            context.coordinator.selectedMatch = selectedMatch
+            if context.coordinator.documentReady { context.coordinator.updateSelection(web) }
+        }
+        let key = html + css + theme; guard context.coordinator.lastHTML != key else { return }; context.coordinator.lastHTML = key
+        let styleKey = css + theme
+        context.coordinator.pendingBody = html
+        if context.coordinator.styleKey != styleKey {
+            context.coordinator.styleKey = styleKey; context.coordinator.documentReady = false
+            web.loadHTMLString(GlossaryDocument.prepare(html: html, css: css, theme: theme), baseURL: nil)
+        } else if context.coordinator.documentReady {
+            context.coordinator.updateBody(web)
+        }
+    }
+    static func dismantleNSView(_ web: WKWebView, coordinator: MediaHandler) { web.configuration.userContentController.removeScriptMessageHandler(forName: "glossaryMatch"); web.configuration.userContentController.removeScriptMessageHandler(forName: "glossarySelection"); web.stopLoading() }
+}
+final class MediaHandler: NSObject, WKURLSchemeHandler, WKScriptMessageHandler, WKNavigationDelegate {
+    let engine: DictionaryEngine
+    var selectedMatch = 0
+    var onMatch: (Int) -> Void = { _ in }
+    var lastHTML = ""
+    var styleKey = ""
+    var pendingBody = ""
+    var documentReady = false
+    func updateBody(_ web: WKWebView) {
+        web.evaluateJavaScript("document.body.innerHTML=\(jsonString(pendingBody));window.scrollTo(0,0)")
+        updateSelection(web)
+    }
+    func updateSelection(_ web: WKWebView) {
+        web.evaluateJavaScript("document.querySelectorAll('[data-select-match]').forEach(button=>button.setAttribute('aria-pressed',Number(button.dataset.selectMatch)===\(selectedMatch)?'true':'false'))")
+    }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        documentReady = true; updateBody(webView)
+    }
+    private var tasks: [ObjectIdentifier: Task<Void, Never>] = [:]
+    var onSelection: (String) -> Void
+    init(_ engine: DictionaryEngine, onSelection: @escaping (String) -> Void) { self.engine = engine; self.onSelection = onSelection }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) { if message.name == "glossaryMatch", let index = message.body as? Int, index >= 0 { onMatch(index) }
+        else if message.name == "glossarySelection", let selection = message.body as? [String: Any], let text = selection["text"] as? String {
+            if let index = selection["match"] as? Int, index >= 0 { onMatch(index) }
+            onSelection(text)
+        } }
+    func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
+        let key = ObjectIdentifier(urlSchemeTask)
+        guard let url = urlSchemeTask.request.url, let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems, let dictionary = query.first(where: { $0.name == "dictionary" })?.value, let path = query.first(where: { $0.name == "path" })?.value else { urlSchemeTask.didFailWithError(URLError(.badURL)); return }
+        tasks[key] = Task { @MainActor in
+            let data = await engine.media(dictionary: dictionary, path: path)
+            guard !Task.isCancelled else { return }
+            if data.isEmpty { urlSchemeTask.didFailWithError(URLError(.fileDoesNotExist)) }
+            else { let type = UTType(filenameExtension: URL(fileURLWithPath: path).pathExtension)?.preferredMIMEType ?? "application/octet-stream"; urlSchemeTask.didReceive(URLResponse(url: url, mimeType: type, expectedContentLength: data.count, textEncodingName: nil)); urlSchemeTask.didReceive(data); urlSchemeTask.didFinish() }
+            tasks.removeValue(forKey: key)
+        }
+    }
+    func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) { tasks.removeValue(forKey: ObjectIdentifier(urlSchemeTask))?.cancel() }
+}

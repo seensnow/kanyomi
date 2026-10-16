@@ -1,0 +1,51 @@
+* { box-sizing: border-box; }
+body { margin: 0; padding: 10px; font: 14px/1.5 -apple-system, BlinkMacSystemFont, sans-serif; color: var(--text-color); background: var(--canvas); overflow-wrap: anywhere; }
+.dictionary-card, .pitch-card { margin: 0 0 9px; background: var(--card); border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+.dictionary-card > summary { padding: 6px 9px; background: var(--canvas); color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 500; border-bottom: 1px solid var(--border); }
+.dictionary-number { margin-right: 8px; opacity: .7; font-variant-numeric: tabular-nums; }
+.definition-content { padding: 8px 10px; }
+.definition-content > :first-child { margin-top: 0; }
+.definition-content > :last-child { margin-bottom: 0; }
+ul, ol { padding-left: 1.45em; margin: .35em 0 .7em; }
+li { padding-left: .15em; margin: .2em 0; }
+p { margin: .5em 0; }
+ruby { ruby-position: over; }
+rt { font-size: .6em; color: var(--muted); }
+img { max-width: 100%; height: auto; }
+table { border-collapse: collapse; max-width: 100%; }
+td, th { padding: 5px; border: 1px solid var(--border); }
+[data-sc-content="sense-group"] + [data-sc-content="sense-group"] { border-top: 1px solid var(--border); padding-top: 7px; margin-top: 7px; }
+ .glossary-tag, [data-sc-class="tag"], [data-sc-code], [data-sc-content="part-of-speech-info"] { display: inline-block; font-size: 11px; font-weight: 500; line-height: 1.35; padding: 1px 4px; margin: 0 4px 3px 0; border-radius: 3px; color: var(--amber) !important; background: var(--amber-bg) !important; vertical-align: middle; }
+[data-sc-content="example-sentence"] { border-left: 2px solid var(--blue) !important; background: var(--blue-bg) !important; border-radius: 4px; padding: 6px 9px; margin: 7px 0; }
+[data-sc-content="example-sentence-a"] { font-size: 14px; line-height: 1.65; color: var(--text-color); }
+[data-sc-content="example-sentence-b"] { font-size: 13px; color: var(--muted); padding-top: 3px; }
+[data-sc-content="example-keyword"] { color: var(--blue) !important; font-weight: 650; }
+[data-sc-content="attribution"] { font-size: 10px; color: var(--muted); margin-top: 10px; }
+.pitch-card { padding: 10px 12px; background: var(--purple-bg); color: var(--purple); }
+.pitch-card h2 { margin: 0 0 6px; font-size: 12px; }
+.pitch-item { display: inline-flex; flex-direction: column; margin: 0 10px 4px 0; max-width: 100%; }
+.pitch-label { font-size: 11px; }
+.pitch-item svg { max-width: 100%; }
+.pitch-item svg text { fill: var(--text-color); }
+.pitch-item svg polyline { stroke: var(--purple); }
+::selection { background: var(--blue-bg); color: var(--text-color); }
+
+/* All lookup matches share one native WebKit vertical scrolling surface. */
+.match-card { margin-bottom: 18px; min-width: 0; }
+.match-card > header { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 3px 0 7px; }
+.match-card h2 { flex: 1; margin: 0; overflow-wrap: anywhere; font-size: 19px; }
+.match-card button { color: var(--blue); background: var(--blue-bg); border: 1px solid var(--border); border-radius: 7px; padding: 3px 7px; cursor: pointer; font: 11px/1.5 -apple-system, sans-serif; }
+.match-card button[aria-pressed="true"] { color: var(--green); background: var(--green-bg); border-color: var(--green); }
+.match-card button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.match-number { font-size: 12px; color: var(--muted); font-weight: 400; }
+.match-reading { display: block; margin-left: 18px; font-size: 12px; color: var(--muted); font-weight: 400; }
+.definition-list { margin: 0; padding-left: 1.6em; }
+.definition-list > li { margin: 0 0 7px; padding-left: 2px; }
+.definition-list > li:last-child { margin-bottom: 0; }
+.single-definition { list-style: none; padding-left: 0; }
+.glossary-tags:empty { display: none; }
+/* A sense's synonyms read as one wrapping line; distinct senses remain separate. */
+.glossary-list, ul[data-sc-content="glossary"] { display: inline; list-style: none; padding: 0; margin: 0; }
+.glossary-list > li, ul[data-sc-content="glossary"] > li { display: inline; padding: 0; margin: 0; }
+.glossary-list > li + li::before, ul[data-sc-content="glossary"] > li + li::before { content: " | "; color: var(--muted); }

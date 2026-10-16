@@ -1,0 +1,4 @@
+module CHoshiDicts {
+ header "hoshidicts_c.h"
+ export *
+}
