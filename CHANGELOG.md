@@ -1,5 +1,11 @@
 # Changelog
 
+## macOS bilingual typography fix — 2026-10-16
+
+- Prevent uneven Chinese glyphs in bilingual EPUB paragraphs when the selected Japanese font lacks Simplified Chinese characters. Resolve system fallback coverage per chapter/font and use one font for a text block only when it covers all of that block’s Han characters. Fully covered Japanese paragraphs retain their selected font; nested text, ruby, dimmed translations, lookup offsets and highlights remain intact.
+- Validation: 26 native tests pass, including new CoreText coverage/single-font shaping and real WebKit horizontal/vertical, nested-span, nested-paragraph, font-switch and lookup-offset checks. A WebKit before/after snapshot reproduces and corrects the reported sentence. WebKit requires execution outside the process-restricted sandbox. Release packaging, strict signature verification, packaged reader-resource comparison and `git diff --check` pass.
+- Limits: if no one system fallback covers a block’s Han characters, retain normal per-glyph fallback. Paragraph fallback can change line wrapping; no release/version bump is included.
+
 ## Repository rename and protection — 2026-10-09
 
 - Rename the GitHub repository to `seensnow/kanyomi`, make it public at the owner’s request, and update the local origin URL and documentation.

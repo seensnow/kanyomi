@@ -4,6 +4,8 @@ An independent native Japanese EPUB reader inspired by Hoshi Reader. SwiftUI and
 
 ## Beta fixes
 
+- Bilingual EPUB paragraphs use a consistent system fallback when the selected font lacks Han characters and that fallback covers the paragraph. This fixes uneven Chinese characters alongside Japanese text; fully covered Japanese paragraphs retain the selected font.
+
 - The app icon and sidebar now use the Japanese kanji 「簡」, on a charcoal background with an orange glyph. The display and internal project name is Kanyomi.
 
 - Beta 6 uses compact Hoshi-inspired glossary layouts: one collapsible heading per dictionary, numbered entries, synonyms separated by `|`, dictionary-provided name/word tags, smaller mining controls and less prominent examples. All matches still scroll continuously; original glossary indices remain available for mining.

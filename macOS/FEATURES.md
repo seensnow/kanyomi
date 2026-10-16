@@ -19,7 +19,7 @@ Reference: Hoshi Reader README plus reader, settings, sync and Sasayaki source i
 | Japanese–Chinese dictionaries | Import compatible Yomitan ZIPs | A publisher-authorized importable Shogakukan ZIP has not been verified |
 | Vocabulary | Save lookup results or manually add words, readings, definitions, examples and sources; per-row or context-menu deletion; search and TSV export | Local persistence; legacy saved words remain readable, per-word Anki IDs are discarded on save; deleting a local word does not delete an Anki note |
 | Interface language | Follow system / English / 简体中文 in Settings → Appearance; persists across launches | Book and dictionary content retain their language; provider errors and some technical status messages remain untranslated |
-| Themes/fonts/CSS | Paper/white/night/custom colors, system/imported fonts, custom CSS | Per-application reading appearance |
+| Themes/fonts/CSS | Paper/white/night/custom colors, system/imported fonts, custom CSS | Per-application reading appearance; paragraph-level fallback avoids mixing incompatible CJK font metrics when one system fallback covers the paragraph’s Han characters |
 | ッツ sync | Bookdata ZIP, progress JSON; Google Drive push/pull, daily stats merge, cover, audio position | Local bookdata round trip tested; real OAuth/Drive integration unverified without credentials; no automatic background sync |
 | Backup/restore | Full local ZIP plus recovery copy, validated restored paths | ZIP path checks tested; Keychain credentials separate |
 | Sasayaki-style audiobooks | Audio + SRT, follow text, replay, rate, delay persistence, cue clip mining | SRT/UTF-16 matching tested; exact sequential normalized matching, no fuzzy sentence expansion |
@@ -42,3 +42,5 @@ The native app uses dark chrome with burnt-orange accents throughout navigation,
 2026-10-09 vocabulary update: 24 native tests pass, including manual entry persistence, blank-word rejection, deletion by identity and legacy Anki ID compatibility. Release packaging and strict signature verification pass. The form has not been checked interactively because UI automation resolves the app to its obsolete bundle identifier; live Anki was not repeated.
 
 Repository: [seensnow/kanyomi](https://github.com/seensnow/kanyomi) is public. Main requires passing browser and native CI through a pull request; force pushes and branch deletion are disabled.
+
+2026-10-16 typography fix: 26 native tests pass, including CoreText single-font shaping and WebKit bilingual horizontal/vertical layout, nested spans/paragraphs, font switching and retained lookup offsets. Before/after WebKit snapshots reproduce and correct the reported uneven Chinese sentence. A paragraph without a complete system fallback retains per-glyph fallback; choosing a paragraph font can change line wrapping. Version remains 0.1.0-beta.7.

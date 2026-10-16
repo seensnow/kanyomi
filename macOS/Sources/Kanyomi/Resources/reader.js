@@ -10,6 +10,32 @@
     while (walker.nextNode()) { const n = walker.currentNode; nodes.push({node:n, start:total, length:clean(n.data).length}); total += clean(n.data).length; }
   }
   function rawOffset(text, target) { let count = 0; for (let i=0; i<text.length; i++) { if (!/\s/.test(text[i])) { if (count === target) return i; count++; } } return text.length; }
+  const textBlocks = 'p,li,h1,h2,h3,h4,h5,h6,td,th,blockquote,figcaption,div,section,article,body';
+  function paragraphFonts(fallbacks, font) {
+    document.querySelectorAll('[data-sr-font]').forEach(el=>el.removeAttribute('data-sr-font'));
+    if (!fallbacks.length) return '';
+    const blocks = new Map();
+    for (const {node} of nodes) {
+      const block = node.parentElement.closest(textBlocks) || node.parentElement;
+      blocks.set(block, (blocks.get(block) || '') + node.data);
+    }
+    const plans = fallbacks.map(f=>({...f,missing:new Set(f.missing),supported:new Set(f.supported)}));
+    const primary = [];
+    for (const [block,text] of blocks) {
+      const han = [...text].filter(c=>/\p{Script=Han}/u.test(c));
+      const choice = plans.findIndex(f=>han.some(c=>f.missing.has(c)) && han.every(c=>f.supported.has(c)));
+      if (choice >= 0) block.setAttribute('data-sr-font', String(choice));
+      else primary.push(block);
+    }
+    // A container's fallback must not spill into independent Japanese paragraphs.
+    // Leave unrelated publisher styles and every original text node intact.
+    for (const block of primary) if (block.parentElement?.closest('[data-sr-font]')) block.setAttribute('data-sr-font','-1');
+    return '[data-sr-font],[data-sr-font] :is(span,ruby,rb,rt,rp,a,em,strong,b,i,small,mark){font-family:var(--sr-paragraph-font)!important}' + [{font},...fallbacks].map((f,i)=>{
+      const selector = `[data-sr-font="${i-1}"]`;
+      const families = [...new Set([f.font,font])].map(name=>JSON.stringify(name)).join(',');
+      return `${selector}{--sr-paragraph-font:${families},serif}`;
+    }).join('');
+  }
   function offsetOf(node, raw) { const entry = nodes.find(e=>e.node===node); return entry ? entry.start + clean(node.data.slice(0,raw)).length : 0; }
   function rangesAt(offset, length=1) {
     const end=offset+length, ranges=[];
@@ -127,13 +153,14 @@
       restoring=true;
       let style=document.getElementById('sr-style');if(!style){style=document.createElement('style');style.id='sr-style';document.head.append(style)}
       const font=JSON.stringify(p.font);
+      const fontCSS=paragraphFonts(p.fontFallbacks || [],p.font);
       // Image-only XHTML often uses a 100% SVG inside fixed-size publisher wrappers.
       // Give it a viewport-sized horizontal canvas independent of text preferences.
       const content=document.body.cloneNode(true);
       content.querySelectorAll(`${ignored},svg`).forEach(el=>el.remove());
       const illustration=!clean(content.textContent) && document.body.querySelectorAll('img,svg').length===1;
       document.body.classList.toggle('sr-illustration',illustration);
-      style.textContent=`html{background:${p.background}!important;color:${p.foreground}!important}body{writing-mode:${p.vertical?'vertical-rl':'horizontal-tb'}!important;font-family:${font},serif!important;font-size:${p.fontSize}px!important;line-height:${p.lineHeight}!important;background:${p.background}!important;color:${p.foreground}!important;margin:0!important;padding:64px!important;${p.vertical?'height:calc(100vh - 128px);min-width:calc(100vw - 128px);':'max-width:860px;margin-inline:auto!important;min-height:calc(100vh - 128px);'}box-sizing:content-box}p,div,span,li{font-size:inherit}img,svg{max-width: min(100%,calc(100vw - 128px));max-height:calc(100vh - 128px);object-fit:contain}body.sr-illustration{writing-mode:horizontal-tb!important;display:flex!important;align-items:center;justify-content:center;width:100%!important;max-width:none!important;min-width:0!important;height:100vh!important;min-height:0!important;margin:0!important;padding:24px!important;box-sizing:border-box!important;overflow:hidden}body.sr-illustration :is(div,p,section,figure,a){display:contents!important}body.sr-illustration :is(img,svg){display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important}rt{${p.showRuby?'':'visibility:hidden;'}}::selection{background:#c77c5c66}a{color:inherit}::highlight(sr-lookup){background:#c77c5c88;color:inherit}mark.sr-highlight{background:#c77c5c70;color:inherit}${p.customCSS||''}`;
+      style.textContent=`html{background:${p.background}!important;color:${p.foreground}!important}body{writing-mode:${p.vertical?'vertical-rl':'horizontal-tb'}!important;font-family:${font},serif!important;font-size:${p.fontSize}px!important;line-height:${p.lineHeight}!important;background:${p.background}!important;color:${p.foreground}!important;margin:0!important;padding:64px!important;${p.vertical?'height:calc(100vh - 128px);min-width:calc(100vw - 128px);':'max-width:860px;margin-inline:auto!important;min-height:calc(100vh - 128px);'}box-sizing:content-box}p,div,span,li{font-size:inherit}img,svg{max-width: min(100%,calc(100vw - 128px));max-height:calc(100vh - 128px);object-fit:contain}body.sr-illustration{writing-mode:horizontal-tb!important;display:flex!important;align-items:center;justify-content:center;width:100%!important;max-width:none!important;min-width:0!important;height:100vh!important;min-height:0!important;margin:0!important;padding:24px!important;box-sizing:border-box!important;overflow:hidden}body.sr-illustration :is(div,p,section,figure,a){display:contents!important}body.sr-illustration :is(img,svg){display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important}rt{${p.showRuby?'':'visibility:hidden;'}}::selection{background:#c77c5c66}a{color:inherit}::highlight(sr-lookup){background:#c77c5c88;color:inherit}mark.sr-highlight{background:#c77c5c70;color:inherit}${fontCSS}${p.customCSS||''}`;
       window.sr.scanLength=p.scanLength;setTimeout(()=>{restoring=false;position()},180);
     },
     restore(offset,fragment){restoring=true;requestAnimationFrame(()=>{if(fragment){document.getElementById(fragment)?.scrollIntoView()}else if(document.body.classList.contains('sr-illustration')) window.scrollTo(0,0);else scrollToOffset(offset);setTimeout(()=>{restoring=false;position()},300)})},

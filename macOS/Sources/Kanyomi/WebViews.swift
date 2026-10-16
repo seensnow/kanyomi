@@ -43,10 +43,18 @@ struct ReaderWebView: NSViewRepresentable {
         var store: ReaderStore
         weak var web: WKWebView?
         var chapterKey = ""; var ready = false; var revision = -1; var preferencesKey = ""; var marksKey = ""; var lookupMarkKey = ""
+        var typographyKey = ""
+        var fontFallbacks: [[String: String]] = []
         init(_ store: ReaderStore) { self.store = store }
         func configure() {
             let p = store.preferences
-            let value = jsonString(["vertical": p.vertical, "font": p.font, "fontSize": p.fontSize, "lineHeight": p.lineHeight, "background": p.background, "foreground": p.foreground, "showRuby": p.showRuby, "customCSS": p.customCSS, "scanLength": p.scanLength])
+            let key = chapterKey + ":" + p.font
+            if typographyKey != key {
+                typographyKey = key
+                let text = store.book.flatMap { $0.chapters.indices.contains($0.chapter) ? $0.chapters[$0.chapter].text : nil } ?? ""
+                fontFallbacks = ReaderTypography.fallbacks(font: p.font, text: text)
+            }
+            let value = jsonString(["vertical": p.vertical, "font": p.font, "fontFallbacks": fontFallbacks, "fontSize": p.fontSize, "lineHeight": p.lineHeight, "background": p.background, "foreground": p.foreground, "showRuby": p.showRuby, "customCSS": p.customCSS, "scanLength": p.scanLength])
             guard value != preferencesKey else { return }; preferencesKey = value
             web?.evaluateJavaScript("window.sr?.configure(\(value));")
             if let book = store.book { web?.evaluateJavaScript("setTimeout(()=>window.sr?.restore(\(book.offset),null),200)") }
