@@ -12,6 +12,8 @@ The native macOS 0.1.0-beta.7 adds compact Hoshi-inspired dictionary layouts wit
 
 A separate native SwiftUI/AppKit app now lives in [`macOS/`](macOS/README.md), with Hoshi-style offline Yomitan lookup, exact character scanning and persistent matched-text highlighting, EPUB reading, AnkiConnect, vocabulary, statistics, audiobook/SRT support, and ッツ exchange/sync. See the [feature comparison and beta limits](macOS/FEATURES.md). Build with `macOS/scripts/package-app.sh release`, or open the generated `macOS/dist/Kanyomi.app`.
 
+Native reading appearance now includes an opt-in **Auto-generate missing furigana** preview. It generates Japanese kanji readings locally, preserves existing ruby and works horizontally or vertically. Enable **Show ruby readings** and **Auto-generate missing furigana** in the reader’s appearance popover or Settings → Appearance. Names and ambiguous readings can be inaccurate; unknown or unalignable tokens remain unchanged.
+
 Native bilingual EPUB paragraphs automatically use a consistent system fallback font when the selected font lacks Han characters and one fallback covers the entire paragraph. Japanese paragraphs already covered by the selected font keep that font.
 
 Version history and validation are recorded in [CHANGELOG.md](CHANGELOG.md). GitHub Actions checks the browser build/tests and the native macOS tests/package.

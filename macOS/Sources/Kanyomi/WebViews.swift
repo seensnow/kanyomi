@@ -21,6 +21,7 @@ struct ReaderWebView: NSViewRepresentable {
         let path = root.appendingPathComponent(book.chapters[book.chapter].path)
         let key = "\(book.id):\(book.chapter)"
         if c.chapterKey != key {
+            c.furiganaTask?.cancel()
             c.chapterKey = key; c.lookupMarkKey = ""; c.ready = false; c.revision = store.navigationRevision
             do {
                 let html = try String(contentsOf: path, encoding: .utf8)
@@ -38,23 +39,25 @@ struct ReaderWebView: NSViewRepresentable {
         if markKey != c.marksKey { c.marksKey = markKey; c.marks() }
         c.lookupMark()
     }
-    static func dismantleNSView(_ nsView: WKWebView, coordinator: Coordinator) { nsView.configuration.userContentController.removeScriptMessageHandler(forName: "reader"); nsView.stopLoading() }
+    static func dismantleNSView(_ nsView: WKWebView, coordinator: Coordinator) { coordinator.furiganaTask?.cancel(); nsView.configuration.userContentController.removeScriptMessageHandler(forName: "reader"); nsView.stopLoading() }
     @MainActor final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         var store: ReaderStore
         weak var web: WKWebView?
         var chapterKey = ""; var ready = false; var revision = -1; var preferencesKey = ""; var marksKey = ""; var lookupMarkKey = ""
         var typographyKey = ""
         var fontFallbacks: [[String: String]] = []
+        var furiganaTask: Task<Void, Never>?
         init(_ store: ReaderStore) { self.store = store }
         func configure() {
             let p = store.preferences
+            if p.autoFurigana != true || !p.showRuby { furiganaTask?.cancel() }
             let key = chapterKey + ":" + p.font
             if typographyKey != key {
                 typographyKey = key
                 let text = store.book.flatMap { $0.chapters.indices.contains($0.chapter) ? $0.chapters[$0.chapter].text : nil } ?? ""
                 fontFallbacks = ReaderTypography.fallbacks(font: p.font, text: text)
             }
-            let value = jsonString(["vertical": p.vertical, "font": p.font, "fontFallbacks": fontFallbacks, "fontSize": p.fontSize, "lineHeight": p.lineHeight, "background": p.background, "foreground": p.foreground, "showRuby": p.showRuby, "customCSS": p.customCSS, "scanLength": p.scanLength])
+            let value = jsonString(["chapterKey": chapterKey, "vertical": p.vertical, "font": p.font, "fontFallbacks": fontFallbacks, "fontSize": p.fontSize, "lineHeight": p.lineHeight, "background": p.background, "foreground": p.foreground, "showRuby": p.showRuby, "autoFurigana": p.autoFurigana == true, "customCSS": p.customCSS, "scanLength": p.scanLength])
             guard value != preferencesKey else { return }; preferencesKey = value
             web?.evaluateJavaScript("window.sr?.configure(\(value));")
             if let book = store.book { web?.evaluateJavaScript("setTimeout(()=>window.sr?.restore(\(book.offset),null),200)") }
@@ -68,10 +71,29 @@ struct ReaderWebView: NSViewRepresentable {
             guard lookupMarkKey != key else { return }; lookupMarkKey = key
             web?.evaluateJavaScript("window.sr?.lookupHighlight(\(store.selectionOffset),\(length))")
         }
+        func generateFurigana(_ data: [String: Any]) {
+            guard ready, data["chapter"] as? String == chapterKey,
+                  store.preferences.autoFurigana == true, store.preferences.showRuby,
+                  let request = data["request"] as? Int, let input = data["blocks"] as? [[String: Any]] else { return }
+            let blocks = input.compactMap { item -> FuriganaBlock? in
+                guard let id = item["id"] as? Int, let text = item["text"] as? String else { return nil }
+                return FuriganaBlock(id: id, text: text, language: item["language"] as? String)
+            }
+            let chapter = chapterKey
+            furiganaTask?.cancel()
+            let worker = Task.detached(priority: .userInitiated) { FuriganaGenerator.annotate(blocks) }
+            furiganaTask = Task { [weak self, weak web] in
+                let annotations = await withTaskCancellationHandler(operation: { await worker.value }, onCancel: { worker.cancel() })
+                guard !Task.isCancelled, let self, let web, self.chapterKey == chapter,
+                      self.store.preferences.autoFurigana == true, self.store.preferences.showRuby else { return }
+                _ = try? await web.evaluateJavaScript("window.sr?.applyFurigana(\(request),\(jsonString(annotations.map(\.json))),\(jsonString(chapter)))")
+            }
+        }
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             guard let data = message.body as? [String: Any], let type = data["type"] as? String else { return }
             switch type {
             case "ready": ready = true; preferencesKey = ""; configure(); restore(); marks(); lookupMark()
+            case "furigana": generateFurigana(data)
             case "position": store.updatePosition(data["offset"] as? Int ?? 0, count: data["count"] as? Int ?? 0, reading: data["reading"] as? Bool ?? false)
             case "lookup": store.lookup(data["text"] as? String ?? "", sentence: data["sentence"] as? String ?? "", offset: data["offset"] as? Int ?? 0, fromBook: true)
             case "activity": store.activity()

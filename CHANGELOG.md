@@ -1,5 +1,13 @@
 # Changelog
 
+## macOS automatic furigana preview — 2026-10-16
+
+- Add an opt-in **Auto-generate missing furigana** switch to reading appearance and Settings → Appearance. Generate Japanese readings locally with the macOS tokenizer, align readings to kanji while leaving okurigana plain, and render ruby above horizontal text or beside vertical text. Keep publisher ruby authoritative and preserve original EPUB files.
+- Detect language per paragraph, including bilingual EPUBs whose root is mislabeled Japanese; skip non-Japanese text, code and SVG/math. Run generation off the UI thread and discard cancelled/stale chapter or toggle results. Hide generated and publisher readings with the existing ruby visibility control.
+- Preserve base-text counts, UTF-16 offsets, selections, dictionary lookup, saved highlights and the previous CJK font fix. Existing saved preferences decode without the new optional field; automatic generation defaults off and persists when enabled.
+- Validation: native tests cover system readings/okurigana, repeated-kana anchors, non-Japanese paragraphs, old settings, the real native/WebKit bridge in both writing modes, publisher ruby, emoji offsets, base-only selection, highlight regeneration and visibility toggles. All 29 native tests pass. Release packaging, strict signature verification, packaged reader-resource comparison and `git diff --check` pass. A real WebKit snapshot confirms the horizontal preview; the native bridge regression covers both orientations.
+- Limits: this is a system-dictionary preview. Names, ambiguous words, language detection and segmentation can be inaccurate; tokens without a usable/aligned reading or crossing partially selected markup remain unchanged. Generated readings are not dictionary corrections or exported EPUB edits. Version remains 0.1.0-beta.7.
+
 ## macOS bilingual typography fix — 2026-10-16
 
 - Prevent uneven Chinese glyphs in bilingual EPUB paragraphs when the selected Japanese font lacks Simplified Chinese characters. Resolve system fallback coverage per chapter/font and use one font for a text block only when it covers all of that block’s Han characters. Fully covered Japanese paragraphs retain their selected font; nested text, ruby, dimmed translations, lookup offsets and highlights remain intact.

@@ -47,6 +47,8 @@ enum AppLanguage {
         "Appearance": "外观",
         "Audio": "音频",
         "Audio URL template": "音频 URL 模板",
+        "Auto-generate missing furigana": "自动补全汉字注音",
+        "Generated locally. Names and ambiguous readings may be inaccurate.": "本地生成；人名、多音词的读音可能不准确。",
         "Audiobook": "有声书",
         "Audiobooks": "有声书",
         "Back to library": "返回书库",

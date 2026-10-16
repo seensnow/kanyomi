@@ -11,6 +11,74 @@
   }
   function rawOffset(text, target) { let count = 0; for (let i=0; i<text.length; i++) { if (!/\s/.test(text[i])) { if (count === target) return i; count++; } } return text.length; }
   const textBlocks = 'p,li,h1,h2,h3,h4,h5,h6,td,th,blockquote,figcaption,div,section,article,body';
+  let autoFurigana = false, furiganaRequest = 0, furiganaBlocks = [], furiganaChapter = '';
+  function removeAutoFurigana() {
+    document.querySelectorAll('ruby[data-sr-auto-ruby]').forEach(ruby=>{
+      ruby.querySelectorAll('rt,rp').forEach(el=>el.remove());
+      ruby.replaceWith(...ruby.childNodes);
+    });
+    document.body.normalize();
+    index();
+  }
+  function requestFurigana(enabled,force=false) {
+    if (enabled===autoFurigana && !force) return;
+    autoFurigana=enabled;
+    const request=++furiganaRequest;
+    const anchor=visibleOffset();
+    removeAutoFurigana();
+    paintLookup();
+    furiganaBlocks=[];
+    if (!enabled) { scrollToOffset(anchor); return; }
+    const blocks=new Map();
+    for (const {node} of nodes) {
+      if (node.parentElement.closest('svg,math,pre,code')) continue;
+      const element=node.parentElement.closest(textBlocks) || node.parentElement;
+      if (!blocks.has(element)) blocks.set(element,{id:blocks.size,text:'',parts:[],language:''});
+      const block=blocks.get(element);
+      block.parts.push({node,start:block.text.length,length:node.length});
+      block.text+=node.data;
+    }
+    for (const [element,block] of blocks) {
+      for (let el=element;el;el=el.parentElement) {
+        const language=el.getAttribute('lang') || el.getAttribute('xml:lang');
+        if (language) { block.language=language; break; }
+      }
+      furiganaBlocks.push(block);
+    }
+    send('furigana',{chapter:furiganaChapter,request,blocks:furiganaBlocks.map(({id,text,language})=>({id,text,language}))});
+  }
+  function applyFurigana(request,annotations,chapter=furiganaChapter) {
+    if (!autoFurigana || request!==furiganaRequest || chapter!==furiganaChapter) return;
+    const anchor=visibleOffset();
+    restoring=true;
+    for (const annotation of annotations) {
+      const block=furiganaBlocks[annotation.id];
+      if (!block) continue;
+      for (const item of [...annotation.readings].sort((a,b)=>b.offset-a.offset)) {
+        const end=item.offset+item.length;
+        const parts=block.parts.filter(p=>p.start<end && p.start+p.length>item.offset);
+        // Keep publisher ruby authoritative and avoid partial-element rewrites.
+        if (!parts.length || parts.some(p=>!p.node.isConnected || p.node.parentElement.closest('ruby'))) continue;
+        const first=parts[0],last=parts[parts.length-1],range=document.createRange();
+        try {
+          range.setStart(first.node,item.offset-first.start);
+          range.setEnd(last.node,end-last.start);
+          if (range.toString()!==item.text) continue;
+          const ruby=document.createElement('ruby');ruby.setAttribute('data-sr-auto-ruby','');
+          range.surroundContents(ruby);
+          const reading=document.createElement('rt');reading.textContent=item.reading;ruby.append(reading);
+        } catch { /* Skip tokens crossing partially selected publisher elements. */ }
+      }
+    }
+    furiganaBlocks=[];
+    index();lastLookup=-1;paintLookup();scrollToOffset(anchor);
+    setTimeout(()=>{restoring=false;position()},180);
+  }
+  function selectionBaseText(range) {
+    const fragment=range.cloneContents();
+    fragment.querySelectorAll(ignored).forEach(el=>el.remove());
+    return fragment.textContent;
+  }
   function paragraphFonts(fallbacks, font) {
     document.querySelectorAll('[data-sr-font]').forEach(el=>el.removeAttribute('data-sr-font'));
     if (!fallbacks.length) return '';
@@ -121,12 +189,13 @@
   function lookupAt(x,y,selected=false) {
     const selection=window.getSelection(),hasSelection=selected && selection?.rangeCount && !selection.isCollapsed;
     const selectedRange=hasSelection?selection.getRangeAt(0):null;
-    const hit=hasSelection?{node:selectedRange.startContainer,raw:selectedRange.startOffset,length:clean(selection.toString()).length}:glyphAt(x,y);
+    const selectedText=hasSelection?clean(selectionBaseText(selectedRange)):'';
+    const hit=hasSelection?{node:selectedRange.startContainer,raw:selectedRange.startOffset,length:selectedText.length}:glyphAt(x,y);
     if(!hit || hit.node.nodeType!==Node.TEXT_NODE || hit.node.parentElement.closest(ignored))return;
     const {node,raw}=hit,offset=offsetOf(node,raw);
     if(!selected && offset===lastLookup)return;
     const block=node.parentElement.closest('p,li,div,section') || node.parentElement;
-    let text=hasSelection?clean(selection.toString()):'';
+    let text=selectedText;
     if(!hasSelection) {
       const startIndex=nodes.findIndex(e=>e.node===node);
       for(const e of nodes.slice(startIndex)) {
@@ -160,14 +229,17 @@
       content.querySelectorAll(`${ignored},svg`).forEach(el=>el.remove());
       const illustration=!clean(content.textContent) && document.body.querySelectorAll('img,svg').length===1;
       document.body.classList.toggle('sr-illustration',illustration);
-      style.textContent=`html{background:${p.background}!important;color:${p.foreground}!important}body{writing-mode:${p.vertical?'vertical-rl':'horizontal-tb'}!important;font-family:${font},serif!important;font-size:${p.fontSize}px!important;line-height:${p.lineHeight}!important;background:${p.background}!important;color:${p.foreground}!important;margin:0!important;padding:64px!important;${p.vertical?'height:calc(100vh - 128px);min-width:calc(100vw - 128px);':'max-width:860px;margin-inline:auto!important;min-height:calc(100vh - 128px);'}box-sizing:content-box}p,div,span,li{font-size:inherit}img,svg{max-width: min(100%,calc(100vw - 128px));max-height:calc(100vh - 128px);object-fit:contain}body.sr-illustration{writing-mode:horizontal-tb!important;display:flex!important;align-items:center;justify-content:center;width:100%!important;max-width:none!important;min-width:0!important;height:100vh!important;min-height:0!important;margin:0!important;padding:24px!important;box-sizing:border-box!important;overflow:hidden}body.sr-illustration :is(div,p,section,figure,a){display:contents!important}body.sr-illustration :is(img,svg){display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important}rt{${p.showRuby?'':'visibility:hidden;'}}::selection{background:#c77c5c66}a{color:inherit}::highlight(sr-lookup){background:#c77c5c88;color:inherit}mark.sr-highlight{background:#c77c5c70;color:inherit}${fontCSS}${p.customCSS||''}`;
+      style.textContent=`html{background:${p.background}!important;color:${p.foreground}!important}body{writing-mode:${p.vertical?'vertical-rl':'horizontal-tb'}!important;font-family:${font},serif!important;font-size:${p.fontSize}px!important;line-height:${p.lineHeight}!important;background:${p.background}!important;color:${p.foreground}!important;margin:0!important;padding:64px!important;${p.vertical?'height:calc(100vh - 128px);min-width:calc(100vw - 128px);':'max-width:860px;margin-inline:auto!important;min-height:calc(100vh - 128px);'}box-sizing:content-box}p,div,span,li{font-size:inherit}img,svg{max-width: min(100%,calc(100vw - 128px));max-height:calc(100vh - 128px);object-fit:contain}body.sr-illustration{writing-mode:horizontal-tb!important;display:flex!important;align-items:center;justify-content:center;width:100%!important;max-width:none!important;min-width:0!important;height:100vh!important;min-height:0!important;margin:0!important;padding:24px!important;box-sizing:border-box!important;overflow:hidden}body.sr-illustration :is(div,p,section,figure,a){display:contents!important}body.sr-illustration :is(img,svg){display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important}ruby[data-sr-auto-ruby]{ruby-position:over;ruby-align:center}ruby[data-sr-auto-ruby]>rt{font-size:.5em;line-height:1.2;font-weight:normal}rt{${p.showRuby?'':'visibility:hidden;'}}::selection{background:#c77c5c66}a{color:inherit}::highlight(sr-lookup){background:#c77c5c88;color:inherit}mark.sr-highlight{background:#c77c5c70;color:inherit}${fontCSS}${p.customCSS||''}`;
       window.sr.scanLength=p.scanLength;setTimeout(()=>{restoring=false;position()},180);
+      furiganaChapter=p.chapterKey || '';
+      requestFurigana(p.autoFurigana===true && p.showRuby!==false);
     },
     restore(offset,fragment){restoring=true;requestAnimationFrame(()=>{if(fragment){document.getElementById(fragment)?.scrollIntoView()}else if(document.body.classList.contains('sr-illustration')) window.scrollTo(0,0);else scrollToOffset(offset);setTimeout(()=>{restoring=false;position()},300)})},
     page(direction){lastUser=Date.now();const vertical=getComputedStyle(document.body).writingMode.startsWith('vertical');window.scrollBy({left:vertical?-direction*(innerWidth-96):0,top:vertical?0:direction*(innerHeight-96),behavior:'smooth'})},
     lookupHighlight,
+    applyFurigana,
     highlight(offset,length){const r=rangeAt(offset,length);if(r){const selection=window.getSelection();selection.removeAllRanges();selection.addRange(r)}},
-    marks(passages){document.querySelectorAll('mark.sr-highlight').forEach(el=>el.replaceWith(...el.childNodes));index();for(const p of [...passages].sort((a,b)=>b.offset-a.offset)){const r=rangeAt(p.offset,p.text.length);if(r){const mark=document.createElement('mark');mark.className='sr-highlight';try{r.surroundContents(mark)}catch{}}}index();paintLookup()}
+    marks(passages){if(autoFurigana)removeAutoFurigana();document.querySelectorAll('mark.sr-highlight').forEach(el=>el.replaceWith(...el.childNodes));index();for(const p of [...passages].sort((a,b)=>b.offset-a.offset)){const r=rangeAt(p.offset,p.text.length);if(r){const mark=document.createElement('mark');mark.className='sr-highlight';try{r.surroundContents(mark)}catch{}}}index();paintLookup();if(autoFurigana)requestFurigana(true,true)}
   };
   function ready(){index();send('ready',{count:total})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready);else ready();

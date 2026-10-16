@@ -10,6 +10,11 @@ struct AppearanceControls: View {
             Text(L("Reading appearance")).font(.headline)
             Toggle(L("Vertical Japanese text"), isOn: Binding(get: { store.preferences.vertical }, set: { store.preferences.vertical = $0 }))
             Toggle(L("Show ruby readings"), isOn: Binding(get: { store.preferences.showRuby }, set: { store.preferences.showRuby = $0 }))
+            VStack(alignment: .leading, spacing: 5) {
+                Toggle(L("Auto-generate missing furigana"), isOn: Binding(get: { store.preferences.autoFurigana == true }, set: { store.preferences.autoFurigana = $0 }))
+                    .disabled(!store.preferences.showRuby)
+                Text(L("Generated locally. Names and ambiguous readings may be inaccurate.")).font(.caption).foregroundStyle(.secondary)
+            }
             Picker(L("Theme"), selection: Binding(get: { store.preferences.theme }, set: { store.preferences.theme = $0 })) { ForEach(["Paper", "White", "Night", "Custom"], id: \.self) { Text(L($0)).tag($0) } }
             HStack { Text(L("Size")); Slider(value: Binding(get: { store.preferences.fontSize }, set: { store.preferences.fontSize = $0 }), in: 14...42, step: 1); Text("\(Int(store.preferences.fontSize))").monospacedDigit().frame(width: 28) }
             HStack { Text(L("Spacing")); Slider(value: Binding(get: { store.preferences.lineHeight }, set: { store.preferences.lineHeight = $0 }), in: 1.2...3, step: 0.1); Text(String(format: "%.1f", store.preferences.lineHeight)).monospacedDigit().frame(width: 28) }

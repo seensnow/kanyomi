@@ -111,6 +111,8 @@ struct Preferences: Codable, Equatable {
     var customForeground = "#302c28"
     var customCSS = ""
     var showRuby = true
+    // Optional for compatibility with libraries saved before automatic furigana.
+    var autoFurigana: Bool? = nil
     var paged = false
     var scanLength = 24
     var dailyGoal = 30

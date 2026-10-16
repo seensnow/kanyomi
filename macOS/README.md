@@ -4,6 +4,8 @@ An independent native Japanese EPUB reader inspired by Hoshi Reader. SwiftUI and
 
 ## Beta fixes
 
+- Reading appearance and Settings → Appearance include an opt-in **Auto-generate missing furigana** preview. Enable **Show ruby readings**, then the new switch. The macOS tokenizer generates readings locally; okurigana stays plain, publisher ruby is retained, and both writing orientations work. Chinese translations are filtered per paragraph. Names, ambiguous readings and language detection can be inaccurate; unsupported or unalignable tokens and partial markup boundaries remain unchanged. The setting persists and defaults off for existing libraries.
+
 - Bilingual EPUB paragraphs use a consistent system fallback when the selected font lacks Han characters and that fallback covers the paragraph. This fixes uneven Chinese characters alongside Japanese text; fully covered Japanese paragraphs retain the selected font.
 
 - The app icon and sidebar now use the Japanese kanji 「簡」, on a charcoal background with an orange glyph. The display and internal project name is Kanyomi.
