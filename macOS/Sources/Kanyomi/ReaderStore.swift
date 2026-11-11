@@ -50,13 +50,16 @@ final class ReaderStore: ObservableObject {
     private var pronunciationTask: Task<Void, Never>?
     @Published var pronunciationLoading = false
     @Published var pronunciationStatus = ""
+    @Published var librarySyncStatus = ""
+    var librarySyncTask: Task<Void, Never>?
+    var nextLibrarySync = Date.distantPast
     private let speech = AVSpeechSynthesizer()
     var book: Book? { state.books.first { $0.id == selectedBookID } }
     var activeResult: WordResult? { results.indices.contains(selectedResult) ? results[selectedResult] : nil }
     var contentRoot: URL? { book.map { root.appendingPathComponent("Books/\($0.id)/Content") } }
     var preferences: Preferences { get { state.preferences } set { state.preferences = newValue; saveSoon() } }
     var filteredBooks: [Book] {
-        state.books.filter { (selectedShelf.isEmpty || $0.shelf == selectedShelf) && (librarySearch.isEmpty || ($0.title + $0.author).localizedCaseInsensitiveContains(librarySearch)) }.sorted { sortByTitle ? $0.title.localizedStandardCompare($1.title) == .orderedAscending : $0.lastOpened > $1.lastOpened }
+        state.books.filter { $0.syncHidden != true && (selectedShelf.isEmpty || $0.shelf == selectedShelf) && (librarySearch.isEmpty || ($0.title + $0.author).localizedCaseInsensitiveContains(librarySearch)) }.sorted { sortByTitle ? $0.title.localizedStandardCompare($1.title) == .orderedAscending : $0.lastOpened > $1.lastOpened }
     }
     init(root: URL? = nil, startTimer: Bool = true) {
         ProductMigration.preferences()
@@ -98,8 +101,9 @@ final class ReaderStore: ObservableObject {
                 do {
                     guard url.pathExtension.lowercased() == "epub" else { throw ReaderError.message("Choose an EPUB file") }
                     let root = root
-                    let book = try await Task.detached { try EPUBImporter.load(url, root: root) }.value
-                    state.books.append(book); save()
+                    var book = try await Task.detached { try EPUBImporter.load(url, root: root) }.value
+                    book.syncAddedAt = syncTimestamp()
+                    state.books.append(book); save(); scheduleLibrarySync()
                 } catch { failures.append("\(url.lastPathComponent): \(error.localizedDescription)") }
             }
             if !failures.isEmpty { throw ReaderError.message(failures.joined(separator: "\n")) }
@@ -109,26 +113,31 @@ final class ReaderStore: ObservableObject {
     func loadSample() {
         run("Preparing sample book and dictionary…") { [self] in
             guard let url = Bundle.readerResources.url(forResource: "Sample", withExtension: "epub", subdirectory: "Resources"), let dictionary = Bundle.readerResources.url(forResource: "SampleDictionary", withExtension: "zip", subdirectory: "Resources") else { throw ReaderError.message("Sample resources missing") }
-            let root = root; let book = try await Task.detached { try EPUBImporter.load(url, root: root) }.value
+            let root = root; var book = try await Task.detached { try EPUBImporter.load(url, root: root) }.value
+            book.syncAddedAt = syncTimestamp()
             state.books.append(book)
             if !state.dictionaries.contains(where: { ProductMigration.isSampleDictionary($0.title) }) { let d = try await engine.importZip(dictionary, root: root); state.dictionaries.append(d); await rebuildDictionaries() }
-            save(); openBook(book.id)
+            save(); openBook(book.id); scheduleLibrarySync()
         }
     }
     func openBook(_ id: UUID) {
-        guard let i = state.books.firstIndex(where: { $0.id == id }) else { return }
+        guard let i = state.books.firstIndex(where: { $0.id == id && $0.syncHidden != true }) else { return }
         player?.pause(); player = nil; playingAudio = false; currentCue = nil
         state.books[i].lastOpened = Date(); selectedBookID = id; section = "Library"
         jumpOffset = state.books[i].offset; jumpFragment = nil; navigationRevision += 1
         results = []; kanjiText = ""; lastActivity = Date(); lastTick = Date(); saveSoon()
         if let audio = state.books[i].audio { player = AVPlayer(url: root.appendingPathComponent("Books/\(id)/\(audio)")); player?.seek(to: CMTime(seconds: state.books[i].audioPosition, preferredTimescale: 600)); audioTime = state.books[i].audioPosition }
     }
-    func closeBook() { player?.pause(); playingAudio = false; player = nil; selectedBookID = nil; results = []; save() }
+    func closeBook() { player?.pause(); playingAudio = false; player = nil; selectedBookID = nil; results = []; save(); scheduleLibrarySync() }
     func mutateBook(_ body: (inout Book) -> Void) { guard let i = state.books.firstIndex(where: { $0.id == selectedBookID }) else { return }; body(&state.books[i]); saveSoon() }
     func moveChapter(_ delta: Int) { guard let book else { return }; navigate(chapter: book.chapter + delta, offset: 0) }
     func navigate(chapter: Int, offset: Int, fragment: String? = nil) {
         guard let book, book.chapters.indices.contains(chapter) else { return }
-        mutateBook { $0.chapter = chapter; $0.offset = max(0, min(offset, $0.chapters[chapter].count)) }
+        mutateBook {
+            $0.chapter = chapter
+            $0.offset = max(0, min(offset, $0.chapters[chapter].count))
+            markLibraryPosition(&$0)
+        }
         jumpOffset = offset; jumpFragment = fragment; navigationRevision += 1; lastActivity = Date()
     }
     func navigate(path: String) {
@@ -137,12 +146,12 @@ final class ReaderStore: ObservableObject {
         navigate(chapter: index, offset: 0, fragment: parts.count > 1 ? parts[1] : nil)
     }
     func updatePosition(_ offset: Int, count: Int, reading: Bool) {
-        guard let book else { return }
+        guard let book, book.chapters.indices.contains(book.chapter) else { return }
         let previous = book.offset
         mutateBook { b in
             let chapter = b.chapter
             b.offset = max(0, min(offset, max(count, b.chapters[chapter].count)))
-
+            if reading && b.offset != previous { markLibraryPosition(&b) }
         }
         if reading { lastActivity = Date(); let delta = offset - previous; if isTiming && delta > 0 && delta <= 2000 { record(characters: delta) } }
     }
@@ -154,9 +163,17 @@ final class ReaderStore: ObservableObject {
     }
     func jump(to passage: SavedPassage) { if selectedBookID != passage.bookID { openBook(passage.bookID) }; navigate(chapter: passage.chapter, offset: passage.offset) }
     func deleteBook(_ id: UUID) {
-        let alert = NSAlert(); alert.messageText = "Remove this book?"; alert.informativeText = "The imported copy and its bookmarks will be removed. Your original EPUB stays on disk."; alert.addButton(withTitle: "Remove"); alert.addButton(withTitle: "Cancel")
+        let alert = NSAlert(); alert.messageText = "Remove this book?"; alert.informativeText = state.syncServer == nil ? "The imported copy and its bookmarks will be removed. Your original EPUB stays on disk." : "Remove this book from the synced shelf and delete its imported copy and bookmarks on this Mac?"; alert.addButton(withTitle: "Remove"); alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { return }
-        do { try FileManager.default.removeItem(at: root.appendingPathComponent("Books/\(id)")); if selectedBookID == id { closeBook() }; state.books.removeAll { $0.id == id }; state.passages.removeAll { $0.bookID == id }; save() } catch { self.error = error.localizedDescription }
+        do {
+            let removal = try libraryRemoval(for: id)
+            try FileManager.default.removeItem(at: root.appendingPathComponent("Books/\(id)"))
+            if selectedBookID == id { closeBook() }
+            if let removal { state.syncRemovals = (state.syncRemovals ?? []) + [removal] }
+            state.books.removeAll { $0.id == id }
+            state.passages.removeAll { $0.bookID == id }
+            save(); scheduleLibrarySync()
+        } catch { self.error = error.localizedDescription }
     }
     func pickDictionary() {
         let panel = NSOpenPanel(); panel.allowedContentTypes = [.zip]; panel.allowsMultipleSelection = true
@@ -203,6 +220,7 @@ final class ReaderStore: ObservableObject {
     static func dateKey(_ date: Date) -> String { let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"; f.locale = Locale(identifier: "en_US_POSIX"); return f.string(from: date) }
     private func tick() {
         let now = Date(); let elapsed = min(2, now.timeIntervalSince(lastTick)); lastTick = now
+        if now >= nextLibrarySync { startLibrarySync() }
         if isTiming && book != nil && NSApp.isActive && now.timeIntervalSince(lastActivity) < 90 { record(seconds: elapsed) }
         if let player, playingAudio, let book {
             let time = player.currentTime().seconds

@@ -1,11 +1,13 @@
 import { migrateDatabase } from './storageMigration'
+import type { ReadingAnchor } from './readingAnchor'
 type BookDetails = {
   title: string
   cover?: Blob
 }
 
 export type ReadingProgress = {
-  cfi: string
+  cfi?: string
+  anchor?: ReadingAnchor
   sectionIndex: number
   sectionTotal: number
   updatedAt: number
@@ -20,6 +22,7 @@ type SavedBookBase = BookDetails & {
 export type ImportedBook = SavedBookBase & {
   source: 'imported'
   file: Blob
+  syncId?: string
 }
 
 export type LinkedBook = SavedBookBase & {
@@ -116,16 +119,19 @@ export async function getSavedDirectories() {
   })
 }
 
-export async function saveBook(file: File, title: string, cover?: Blob) {
-  const database = await openDatabase()
-  const savedBook: ImportedBook = {
+export async function saveBook(file: File, title: string, cover: Blob | undefined, data: ArrayBuffer) {
+  return saveImportedBook({
     id: `${file.name}-${file.size}-${file.lastModified}`,
     source: 'imported',
     title,
-    file,
+    file: new Blob([data], { type: 'application/epub+zip' }),
     cover,
     addedAt: Date.now(),
-  }
+  })
+}
+
+export async function saveImportedBook(savedBook: ImportedBook) {
+  const database = await openDatabase()
 
   return new Promise<ImportedBook>((resolve, reject) => {
     const transaction = database.transaction(booksStoreName, 'readwrite')
@@ -134,7 +140,9 @@ export async function saveBook(file: File, title: string, cover?: Blob) {
 
     existingRequest.onsuccess = () => {
       const existing = existingRequest.result as SavedBook | undefined
-      if (existing?.progress) savedBook.progress = existing.progress
+      if (existing?.progress && (!savedBook.progress || existing.progress.updatedAt > savedBook.progress.updatedAt)) {
+        savedBook.progress = existing.progress
+      }
       store.put(savedBook)
     }
 
@@ -143,6 +151,21 @@ export async function saveBook(file: File, title: string, cover?: Blob) {
       resolve(savedBook)
     }
     transaction.onerror = () => { database.close(); reject(transaction.error) }
+    transaction.onabort = () => { database.close(); reject(transaction.error) }
+  })
+}
+
+export async function saveSyncId(id: string, syncId: string) {
+  const database = await openDatabase()
+  return new Promise<void>((resolve, reject) => {
+    const transaction = database.transaction(booksStoreName, 'readwrite')
+    const store = transaction.objectStore(booksStoreName)
+    const request = store.get(id)
+    request.onsuccess = () => {
+      const book = request.result as ImportedBook | undefined
+      if (book) store.put({ ...book, syncId })
+    }
+    transaction.oncomplete = () => { database.close(); resolve() }
     transaction.onabort = () => { database.close(); reject(transaction.error) }
   })
 }

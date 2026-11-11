@@ -1,0 +1,14 @@
+{
+  "id": "/",
+  "name": "Kanyomi",
+  "short_name": "Kanyomi",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#252525",
+  "theme_color": "#252525",
+  "icons": [
+    { "src": "/touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

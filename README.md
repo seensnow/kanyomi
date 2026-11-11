@@ -29,6 +29,25 @@ npm run dev
 
 Open the local URL printed by Vite. For a production build, run `npm run build` and serve `dist/` over HTTP or HTTPS. Run `npm run lint` and `npm test` to check the source.
 
+On iPhone, open the production site over HTTPS in Safari, choose **Share → Add to Home Screen**, and enable **Open as Web App**. Launch Kanyomi from its new icon while online and wait for **Ready to open offline**. Import EPUBs and a Yomitan dictionary from Files inside that app. The Home Screen app has its own local storage. Book assets packaged inside the EPUB and imported Japanese dictionary entries work offline. Keep the source files in Files so you can reimport them if iOS clears website data.
+
+## Sync iPhone and Mac
+
+For one private library, run the bundled sync server on a host both devices can reach. Build with `npm run build`, generate a key once with `openssl rand -hex 32`, and set the following in the server's environment before running `npm run serve:sync`:
+
+- `KANYOMI_SYNC_TOKEN` is the generated key. Store it in your host's secrets and use the same key on both devices.
+- `KANYOMI_SYNC_DIR` is a private, persistent directory outside `dist/`. Back up this directory to retain server copies and sync records.
+
+The server serves both the web app and sync API on `127.0.0.1:4173` by default. Put it behind an HTTPS reverse proxy and serve it at the root of a dedicated origin. Keep the same HTTPS address between upgrades so iOS can reuse its local library and cache.
+
+Open that HTTPS address in the Home Screen app and enter the key under **Sync with Mac**. In the native Mac app, open **Sync & Backup → iPhone library sync** and enter the same address and key. After setup, the app syncs imported EPUBs and reading positions automatically. The phone downloads a synced book when you first open it. Downloaded books stay available offline. Pending changes retry when connectivity returns while the app is open, or the next time you open it. The Mac checks for changes about every 10 seconds while running.
+
+The server matches identical EPUB files by their SHA-256 digest and keeps the most recent position by its recorded time. If a book is open, the position from the other device takes effect after you return to the library. Removing a book from the synced shelf hides it on both devices. The server retains its copy, and the Mac retains locally attached material when a remote removal hides the book. Import the same EPUB again to restore it to the shelf.
+
+Sync supports EPUBs up to 128 MiB. Import linked books to sync them. Dictionaries, vocabulary, book annotations, shelf categories and audio stay local. Use devices with automatic date and time so concurrent progress changes can be ordered correctly.
+
+To reproduce the iPhone-profile check, install Playwright and its WebKit browser, build the web app, and run `node tests/webkit-iphone.mjs`. Set `PLAYWRIGHT_MODULE` to Playwright's absolute `index.mjs` path if installed outside this project. On macOS, add `--sync` to run the same web client against the Swift reader and a temporary server.
+
 ## Use
 
 1. Import an `.epub` file. On browsers with folder access, **Open Folder** links all EPUBs in that folder and its subfolders without copying the files. Reopen a folder to refresh its contents.
@@ -44,7 +63,7 @@ Open the local URL printed by Vite. For a production build, run `npm run build` 
 - Anki integration requires the desktop Anki app and AnkiConnect running on the same computer, with the reader's origin allowed by your local AnkiConnect configuration.
 - English online lookup and Japanese online fallback require a network connection. Imported Japanese dictionaries work offline.
 - Reading position uses the EPUB's CFI. If a book is replaced with a substantially different file, its old position may no longer resolve; the reader falls back to the beginning.
-- Data stays in one browser profile. There is no account or cross-device sync in this beta.
+- With sync disconnected, imported books and reading positions stay in this browser profile. Dictionaries stay local in either mode.
 
 The macOS beta 6 AnkiConnect path has also been tested live: dictionary-search note creation with localized front/back fields, correct definition content, duplicate prevention and persistence after Anki restart. Audio/media upload and Lapis were not covered by that live check.
 

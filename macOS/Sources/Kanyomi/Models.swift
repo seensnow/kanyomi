@@ -30,6 +30,10 @@ struct Book: Codable, Identifiable, Hashable {
     var audioPosition: Double = 0
     var audioRate: Float = 1
     var audioDelay: Double = 0
+    var syncID: String?
+    var syncAddedAt: Int64?
+    var syncPosition: LibrarySyncPosition?
+    var syncHidden: Bool?
     var totalCharacters: Int { chapters.reduce(0) { $0 + $1.count } }
     var characterPosition: Int { guard chapters.indices.contains(chapter) else { return 0 }; return chapters[chapter].start + offset }
     var progress: Double { totalCharacters > 0 ? Double(characterPosition) / Double(totalCharacters) : 0 }
@@ -137,6 +141,8 @@ struct LibraryState: Codable {
     var dictionaries: [DictionaryRecord] = []
     var words: [MinedWord] = []
     var preferences = Preferences()
+    var syncServer: String?
+    var syncRemovals: [LibrarySyncRecord]?
 }
 struct Cue: Codable, Identifiable, Hashable {
     var id: Int
