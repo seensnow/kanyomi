@@ -1,5 +1,12 @@
 # Changelog
 
+## iPhone offline reading and Mac library sync — 2026-11-11
+
+- Install Kanyomi as a Home Screen web app. The production build caches the reader, library and dictionary code for offline startup after the first online launch. An update waits for the previous version's open pages to close before switching caches.
+- Import EPUBs and Yomitan dictionaries from Files. Read downloaded chapters and look up Japanese without connecting to the network. Offline dictionary misses indicate whether a dictionary is missing or the word is absent. iOS can reclaim site storage under pressure, and external EPUB resources still need connectivity.
+- Pair the web app and macOS reader with the same private Kanyomi sync server to share imported EPUBs and reading positions. Both save locally and retry automatically while open. The web app downloads an EPUB on first open. Sync recognizes identical EPUB bytes and uses the most recent recorded position. Current readers keep their place until they return to the library.
+- Validation: Playwright WebKit with an iPhone 15 profile and persistent storage verifies offline startup, EPUB and Yomitan import, chapter navigation, offline Japanese lookup and reopening. The native Swift reader and WebKit test verify EPUB and position changes in both directions, including browser offline changes surviving a close and uploading on reconnect. Web lint, six unit tests and production build pass. The 29 standard macOS tests, release packaging and signature verification pass. Physical iPhone and hosted HTTPS deployment remain unverified. Versions remain web 0.1.0-beta.1 and macOS 0.1.0-beta.7.
+
 ## macOS automatic furigana preview — 2026-10-16
 
 - Add an opt-in **Auto-generate missing furigana** switch to reading appearance and Settings → Appearance. Generate Japanese readings locally with the macOS tokenizer, align readings to kanji while leaving okurigana plain, and render ruby above horizontal text or beside vertical text. Keep publisher ruby authoritative and preserve original EPUB files.

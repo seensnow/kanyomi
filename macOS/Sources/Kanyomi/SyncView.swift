@@ -11,12 +11,30 @@ struct SyncView: View {
     @State private var rootFolder: String?
     @State private var includeStatistics = true
     @State private var includeAudio = true
+    @State private var libraryServer = ""
+    @State private var libraryKey = ""
     var body: some View {
         let _ = interfaceLocale
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 Text(L("Keep your place.")).font(.system(size: 32, design: .serif))
-                Text(L("Back up this Mac, or exchange books and reading progress with ッツ Reader.")).foregroundStyle(.secondary)
+                GroupBox(L("iPhone library sync")) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        if let server = store.state.syncServer {
+                            Text(server).foregroundStyle(.secondary)
+                            Button(L("Disconnect library sync")) { store.disconnectLibrarySync() }
+                        } else {
+                            Text(L("Sync imported EPUBs and reading positions with the iPhone web app.")).foregroundStyle(.secondary)
+                            TextField(L("Kanyomi server URL"), text: $libraryServer).textFieldStyle(.roundedBorder)
+                            SecureField(L("Sync key"), text: $libraryKey).textFieldStyle(.roundedBorder)
+                            Button(L("Connect library sync")) {
+                                store.connectLibrarySync(server: libraryServer, key: libraryKey.trimmingCharacters(in: .whitespacesAndNewlines))
+                                libraryKey = ""
+                            }.disabled(libraryServer.isEmpty || libraryKey.isEmpty)
+                        }
+                        if !store.librarySyncStatus.isEmpty { Text(L(store.librarySyncStatus)).font(.caption).foregroundStyle(.secondary) }
+                    }.padding(12)
+                }
                 GroupBox(L("Local backup")) {
                     HStack { Text(L("Books, dictionaries, saved words, bookmarks and settings.")).foregroundStyle(.secondary); Spacer(); Button(L("Create backup…")) { store.backup() }; Button(L("Restore…")) { store.restore() } }.padding(12)
                 }

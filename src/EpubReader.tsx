@@ -4,6 +4,8 @@ import type { ChangeEvent } from 'react'
 import ePub from '@likecoin/epub-ts'
 import type { Contents, NavItem, Rendition } from '@likecoin/epub-ts'
 import type { ReadingProgress } from './bookStorage'
+import { requestPersistentStorage } from './offline'
+import { anchorFromCfi, anchorFromRange, displayAnchor } from './readingAnchor'
 import {
   addWordToAnki,
   defaultAnkiSettings,
@@ -46,11 +48,11 @@ function EpubReader(props: EpubReaderProps) {
   const dictionaryInputRef = useRef<HTMLInputElement>(null)
   const renditionRef = useRef<Rendition | null>(null)
   const wiredContentsRef = useRef(new WeakSet<Contents>())
+  const selectionsRef = useRef(new WeakMap<Contents, () => void>())
   const onProgressRef = useRef(props.onProgress)
   const initialProgressRef = useRef(props.progress)
-  const pendingProgressRef = useRef<ReadingProgress | null>(null)
-  const progressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lookupRequestRef = useRef(0)
+  const suppressRelocationUntil = useRef(0)
   const [error, setError] = useState('')
   const [isOpening, setIsOpening] = useState(true)
   const [chapters, setChapters] = useState<NavItem[]>([])
@@ -88,15 +90,6 @@ function EpubReader(props: EpubReaderProps) {
   useEffect(() => {
     onProgressRef.current = props.onProgress
   }, [props.onProgress])
-
-  function flushProgress() {
-    if (progressTimerRef.current) clearTimeout(progressTimerRef.current)
-    progressTimerRef.current = null
-    if (pendingProgressRef.current) {
-      onProgressRef.current(pendingProgressRef.current)
-      pendingProgressRef.current = null
-    }
-  }
 
   function saveAnkiSettings(nextSettings: AnkiSettings) {
     setAnkiSettings(nextSettings)
@@ -138,9 +131,10 @@ function EpubReader(props: EpubReaderProps) {
       if (request !== lookupRequestRef.current) return
       setDictionaryResult(result)
       setLookupStatus('')
-    } catch {
+    } catch (error) {
       if (request === lookupRequestRef.current) {
-        setLookupStatus('No definition found. Japanese lookup works offline after importing a Yomitan dictionary.')
+        setLookupStatus(!navigator.onLine && error instanceof Error ? error.message
+          : 'No definition found. Japanese lookup works offline after importing a Yomitan dictionary.')
       }
     }
   }, [])
@@ -156,19 +150,34 @@ function EpubReader(props: EpubReaderProps) {
     if (wiredContentsRef.current.has(contents)) return
     wiredContentsRef.current.add(contents)
     const document = contents.document
+    let selectionTimer: ReturnType<typeof setTimeout>
+    let previousSelection: { word: string; anchor: Node | null; focus: Node | null; start: number; end: number } | undefined
 
     const lookupSelection = () => {
       const selected = document.getSelection()
       const word = selected?.toString().replace(/\s+/g, ' ').trim() ?? ''
-      if (!word || word.length > 80) return
-      const parent = selected?.anchorNode?.parentElement
+      if (!selected || !word || word.length > 80) {
+        previousSelection = undefined
+        return
+      }
+      const { anchorNode: anchor, focusNode: focus, anchorOffset: start, focusOffset: end } = selected
+      if (previousSelection?.word === word && previousSelection.anchor === anchor && previousSelection.focus === focus &&
+          previousSelection.start === start && previousSelection.end === end) return
+      previousSelection = { word, anchor, focus, start, end }
+      const parent = anchor?.parentElement
       const paragraph = parent?.closest('p, li, blockquote, h1, h2, h3, div')
       const sentence = (paragraph?.textContent ?? word).replace(/\s+/g, ' ').trim().slice(0, 500)
       void showLookup(word, sentence)
     }
 
-    document.addEventListener('mouseup', lookupSelection)
-    document.addEventListener('touchend', () => window.setTimeout(lookupSelection, 0), { passive: true })
+    const scheduleLookup = () => {
+      clearTimeout(selectionTimer)
+      selectionTimer = setTimeout(lookupSelection, 180)
+    }
+    document.addEventListener('mouseup', scheduleLookup)
+    document.addEventListener('touchend', scheduleLookup, { passive: true })
+    document.addEventListener('selectionchange', scheduleLookup)
+    selectionsRef.current.set(contents, lookupSelection)
 
     document.addEventListener('mousemove', (event) => {
       const pointer = event as MouseEvent
@@ -285,19 +294,24 @@ function EpubReader(props: EpubReaderProps) {
           manager: 'continuous',
         })
         renditionRef.current = rendition
+        let restoring = true
+        let previousCfi = ''
         rendition.on('relocated', (location) => {
           const cfi = location.start?.cfi
           if (!cfi || cancelled) return
-          const progress: ReadingProgress = {
+          if (Date.now() < suppressRelocationUntil.current) return
+          setCurrentSection(location.start.index)
+          if (restoring || cfi === previousCfi) { previousCfi = cfi; return }
+          previousCfi = cfi
+          let anchor
+          try { anchor = anchorFromCfi(rendition, cfi, location.start.index) } catch { /* Local CFI still works. */ }
+          onProgressRef.current({
             cfi,
+            anchor,
             sectionIndex: location.start.index,
             sectionTotal: book?.spine.length ?? 0,
             updatedAt: Date.now(),
-          }
-          setCurrentSection(progress.sectionIndex)
-          pendingProgressRef.current = progress
-          if (progressTimerRef.current) clearTimeout(progressTimerRef.current)
-          progressTimerRef.current = setTimeout(flushProgress, 800)
+          })
         })
         rendition.on('rendered', (_section, view) => {
           if (view.contents) {
@@ -306,16 +320,16 @@ function EpubReader(props: EpubReaderProps) {
           }
         })
         applyAppearance(rendition)
-        const savedCfi = initialProgressRef.current?.cfi
-        if (savedCfi) {
-          try {
-            await rendition.display(savedCfi)
-          } catch {
-            await rendition.display()
-          }
-        } else {
-          await rendition.display()
+        const saved = initialProgressRef.current
+        let restored = false
+        if (saved?.cfi) {
+          try { restored = Boolean(await rendition.display(saved.cfi)) } catch { /* Try the shared anchor below. */ }
         }
+        if (!restored && saved?.anchor) {
+          try { restored = await displayAnchor(rendition, saved.anchor) } catch { /* Start from the first chapter. */ }
+        }
+        if (!restored) await rendition.display()
+        restoring = false
         if (!cancelled) setIsOpening(false)
       } catch {
         if (!cancelled) {
@@ -326,10 +340,15 @@ function EpubReader(props: EpubReaderProps) {
     }
 
     void displayBook(viewer)
-
+    // WebKit may suppress event callbacks in a sandboxed EPUB frame. Read the
+    // selection from the parent page, keeping EPUB scripting disabled.
+    const selectionPoll = window.matchMedia('(any-pointer: coarse)').matches ? setInterval(() => {
+      if (document.hidden) return
+      for (const contents of renditionRef.current?.getContents() ?? []) selectionsRef.current.get(contents)?.()
+    }, 250) : undefined
     return () => {
       cancelled = true
-      flushProgress()
+      clearInterval(selectionPoll)
       book?.destroy()
       renditionRef.current = null
       viewer.replaceChildren()
@@ -337,12 +356,32 @@ function EpubReader(props: EpubReaderProps) {
   }, [props.file, applyAppearance, installReaderInteractions])
 
   async function jumpToChapter(href: string) {
-    if (!href || !renditionRef.current) return
+    const rendition = renditionRef.current
+    if (!href || !rendition) return
+    suppressRelocationUntil.current = Infinity
     try {
-      await renditionRef.current.display(href)
+      const section = rendition.book.spine.get(href)
+      await rendition.display(href)
+      if (section?.index !== undefined) {
+        const index = section.index
+        const contents = rendition.getContents().find(item => item.sectionIndex === index)
+        if (contents) {
+          const fragment = href.split('#')[1]
+          const target = (fragment && contents.document.getElementById(fragment)) || contents.document.body
+          const range = contents.document.createRange()
+          range.selectNodeContents(target)
+          range.collapse(true)
+          const cfi = contents.cfiFromRange(range)
+          const anchor = anchorFromRange(rendition, range, index)
+          setCurrentSection(index)
+          onProgressRef.current({ cfi, anchor, sectionIndex: index, sectionTotal: rendition.book.spine.length, updatedAt: Date.now() })
+        }
+      }
       setSelection(null)
     } catch {
       setError('Could not open that chapter in this EPUB.')
+    } finally {
+      suppressRelocationUntil.current = Date.now() + 500
     }
   }
 
@@ -369,6 +408,7 @@ function EpubReader(props: EpubReaderProps) {
   async function handleDictionaryImport(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
+    void requestPersistentStorage()
     setDictionaryStatus(`Importing “${file.name}”…`)
 
     try {
@@ -376,7 +416,9 @@ function EpubReader(props: EpubReaderProps) {
       setDictionaries((current) => [summary, ...current.filter((dictionary) => dictionary.id !== summary.id)])
       setDictionaryStatus(`Imported ${summary.title}: ${summary.entryCount.toLocaleString()} terms available offline.`)
     } catch (importError) {
-      setDictionaryStatus(importError instanceof Error ? importError.message : 'Could not import this dictionary.')
+      setDictionaryStatus(importError instanceof DOMException && importError.name === 'QuotaExceededError'
+        ? 'There is not enough browser storage for this dictionary.'
+        : importError instanceof Error ? importError.message : 'Could not import this dictionary.')
     }
 
     event.target.value = ''

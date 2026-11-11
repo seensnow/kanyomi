@@ -920,6 +920,17 @@ input:focus-visible {
   }
 }
 
+.library-sync {
+  margin: 0 0 18px;
+  font-size: 0.9rem;
+}
+
+.library-sync summary { cursor: pointer; }
+.library-sync form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.library-sync form, .library-sync > button { margin-top: 8px; }
+.library-sync input, .library-sync button { padding: 6px 10px; border: 1px solid #645047; border-radius: 6px; }
+.library-sync button { color: inherit; background: transparent; cursor: pointer; }
+
 /* Black and burnt-orange chrome, including panels rendered outside the EPUB. */
 .app-dark { color: #e8e5e2; background: #252525; color-scheme: dark; }
 .app-dark .brand, .app-dark .dictionary-label, .app-dark .library-toolbar h1,

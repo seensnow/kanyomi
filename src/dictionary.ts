@@ -480,6 +480,12 @@ export async function lookupWord(rawWord: string, offset?: number) {
   if (isJapanese(word)) {
     const localResult = await lookupImportedJapanese(word, offset)
     if (localResult) return localResult
+    if (!navigator.onLine) {
+      const dictionaries = await getImportedDictionaries()
+      throw new Error(dictionaries.length
+        ? 'No match in your offline Japanese dictionaries.'
+        : 'Import a Yomitan dictionary to look up Japanese offline.')
+    }
     return lookupJapaneseOnline(word)
   }
 

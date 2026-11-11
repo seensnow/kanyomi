@@ -2,6 +2,9 @@ import { readPreference } from './storageMigration'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import BookCover from './BookCover'
+import { requestPersistentStorage, watchOfflineAvailability } from './offline'
+import { cachedShelf, downloadSyncedBook, notifyLibrarySync, queueShelfRemoval, syncKeyName, watchLibrarySync } from './librarySync'
+import type { SyncedBook } from './librarySync'
 import {
   getSavedBooks,
   getSavedDirectories,
@@ -102,6 +105,14 @@ function App() {
   const [openingBookId, setOpeningBookId] = useState('')
   const [managingBookId, setManagingBookId] = useState('')
   const [message, setMessage] = useState('')
+  const [offlineStatus, setOfflineStatus] = useState('')
+  const [syncKey, setSyncKey] = useState(() => {
+    try { return localStorage.getItem(syncKeyName) ?? '' } catch { return '' }
+  })
+  const [keyInput, setKeyInput] = useState('')
+  const [syncStatus, setSyncStatus] = useState('')
+  const [remoteBooks, setRemoteBooks] = useState(cachedShelf)
+  const readerId = useRef<string | undefined>(undefined)
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
 
   function changeTheme(nextTheme: Theme) {
@@ -116,6 +127,38 @@ function App() {
       .finally(() => setIsLoading(false))
   }, [])
 
+  useEffect(() => watchOfflineAvailability(setOfflineStatus), [])
+
+  useEffect(() => {
+    readerId.current = readerBook?.id
+    if (!readerBook) notifyLibrarySync()
+  }, [readerBook])
+
+  useEffect(() => {
+    if (!syncKey) return
+    return watchLibrarySync(syncKey, () => readerId.current, (status, local, remote) => {
+      setSyncStatus(status)
+      if (local) setBooks(local)
+      if (remote) setRemoteBooks(remote)
+    })
+  }, [syncKey])
+
+  function changeSyncKey(key: string) {
+    if (key && !/^[a-f0-9]{64}$/.test(key)) {
+      setSyncStatus('Enter the 64-character sync key for your Kanyomi server.')
+      return
+    }
+    try {
+      if (key) localStorage.setItem(syncKeyName, key)
+      else localStorage.removeItem(syncKeyName)
+      setSyncKey(key)
+      setKeyInput('')
+      setSyncStatus(key ? 'Connecting…' : '')
+    } catch {
+      setSyncStatus('This browser could not save the sync settings.')
+    }
+  }
+
   async function handleImport(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
 
@@ -124,16 +167,19 @@ function App() {
     }
 
     setIsImporting(true)
+    void requestPersistentStorage()
     setMessage('Importing EPUB…')
     try {
       const { readEpubDetails } = await import('./epubMetadata')
-      const details = await readEpubDetails(file)
-      const savedBook = await saveBook(file, details.title, details.cover)
+      const data = await file.arrayBuffer()
+      const details = await readEpubDetails(file, data)
+      const savedBook = await saveBook(file, details.title, details.cover, data)
       setBooks((currentBooks) => [
         savedBook,
         ...currentBooks.filter((book) => book.id !== savedBook.id),
       ])
       setReaderBook({ id: savedBook.id, title: savedBook.title, file: savedBook.file, progress: savedBook.progress })
+      notifyLibrarySync()
       setMessage('Imported into this browser for offline reading.')
     } catch (error) {
       setMessage(error instanceof DOMException && error.name === 'QuotaExceededError'
@@ -229,7 +275,20 @@ function App() {
     }
   }
 
-  async function handleOpenBook(book: SavedBook) {
+  async function handleOpenBook(book: SavedBook | SyncedBook) {
+    if (!('source' in book)) {
+      setOpeningBookId(book.id)
+      try {
+        const downloaded = await downloadSyncedBook(syncKey, book)
+        setBooks(current => [downloaded, ...current.filter(item => item.id !== downloaded.id)])
+        setReaderBook(downloaded)
+      } catch {
+        setMessage('Connect to the internet to download this EPUB for offline reading.')
+      } finally {
+        setOpeningBookId('')
+      }
+      return
+    }
     if (book.source === 'imported') {
       setReaderBook({ id: book.id, title: book.title, file: book.file, progress: book.progress })
       return
@@ -263,30 +322,37 @@ function App() {
 
   function handleProgress(id: string, progress: ReadingProgress) {
     setBooks((currentBooks) => currentBooks.map((book) => book.id === id ? { ...book, progress } : book))
-    void saveReadingProgress(id, progress).catch(() => {
+    void saveReadingProgress(id, progress).then(notifyLibrarySync).catch(() => {
       setMessage('Reading position could not be saved in this browser.')
     })
   }
 
-  async function handleRemoveBook(book: SavedBook) {
-    const folderName = book.source === 'linked'
-      ? (await getSavedDirectories().catch(() => [])).find((folder) => folder.id === book.directoryId)?.name ?? 'this folder'
+  async function handleRemoveBook(book: SavedBook | SyncedBook) {
+    const linked = 'source' in book && book.source === 'linked' ? book : undefined
+    const folderName = linked
+      ? (await getSavedDirectories().catch(() => [])).find((folder) => folder.id === linked.directoryId)?.name ?? 'this folder'
       : ''
-    const confirmed = book.source === 'linked'
+    const confirmed = linked
       ? window.confirm(`Unlink “${folderName}” and remove all its books from this library? The files on disk will stay untouched.`)
-      : window.confirm(`Remove “${book.title}” from this browser? Its imported EPUB and saved position will be deleted.`)
+      : window.confirm(syncKey ? `Remove “${book.title}” from your synced shelf?`
+        : `Remove “${book.title}” from this browser? Its imported EPUB and saved position will be deleted.`)
     if (!confirmed) return
 
     setManagingBookId(book.id)
     try {
-      if (book.source === 'linked') {
-        await unlinkDirectory(book.directoryId)
-        setBooks((current) => current.filter((item) => item.source !== 'linked' || item.directoryId !== book.directoryId))
+      if (linked) {
+        await unlinkDirectory(linked.directoryId)
+        setBooks((current) => current.filter((item) => item.source !== 'linked' || item.directoryId !== linked.directoryId))
         setMessage(`Unlinked “${folderName}”. Files on disk were not changed.`)
-      } else {
-        await removeImportedBook(book.id)
+      } else if (!('source' in book) || book.source === 'imported') {
+        if (syncKey) {
+          await queueShelfRemoval(book)
+          setRemoteBooks(cachedShelf())
+        }
+        if ('source' in book) await removeImportedBook(book.id)
         setBooks((current) => current.filter((item) => item.id !== book.id))
-        setMessage(`Removed “${book.title}” from this browser.`)
+        setMessage(`Removed “${book.title}”.`)
+        notifyLibrarySync()
       }
     } catch {
       setMessage('Could not update the library. Please try again.')
@@ -295,7 +361,10 @@ function App() {
     }
   }
 
-  const filteredBooks = books.filter((book) =>
+  const availableBooks = [...books, ...(syncKey ? remoteBooks.filter(remote => !books.some(
+    book => book.source === 'imported' && (book.syncId === remote.id || book.id === remote.id),
+  )) : [])]
+  const filteredBooks = availableBooks.filter((book) =>
     book.title.toLowerCase().includes(searchText.toLowerCase()),
   )
 
@@ -335,7 +404,7 @@ function App() {
               <p className="eyebrow">MY LIBRARY</p>
               <h1>Your books</h1>
               <p className="library-summary">
-                Linked books stay in their folder; imported books stay privately in this browser.
+                {syncKey ? 'Imported books sync with your Mac.' : 'Linked books stay in their folder; imported books stay privately in this browser.'}
               </p>
             </div>
 
@@ -383,6 +452,17 @@ function App() {
             </p>
           )}
 
+          {offlineStatus && <p className="compatibility-note" role="status">{offlineStatus}</p>}
+          <details className="library-sync">
+            <summary>Sync with Mac{syncKey && syncStatus ? ` · ${syncStatus}` : ''}</summary>
+            {syncKey ? <button type="button" onClick={() => changeSyncKey('')}>Disconnect sync</button> : (
+              <form onSubmit={event => { event.preventDefault(); changeSyncKey(keyInput.trim()) }}>
+                <label>Sync key <input type="password" value={keyInput} onChange={event => setKeyInput(event.target.value)} autoComplete="off" /></label>
+                <button type="submit">Connect</button>
+                {syncStatus && <p role="status">{syncStatus}</p>}
+              </form>
+            )}
+          </details>
           {message && <p className="status-message" aria-live="polite">{message}</p>}
 
           {isLoading ? (
@@ -390,16 +470,18 @@ function App() {
           ) : filteredBooks.length === 0 ? (
             <div className="empty-library">
               <div className="empty-book">EPUB</div>
-              <h2>{books.length === 0 ? 'Your library is empty' : 'No books found'}</h2>
+              <h2>{availableBooks.length === 0 ? 'Your library is empty' : 'No books found'}</h2>
               <p>
-                {books.length === 0
+                {availableBooks.length === 0
                   ? 'Open a folder or import your first EPUB to start reading.'
                   : 'Try a different search.'}
               </p>
             </div>
           ) : (
             <section className="book-grid">
-              {filteredBooks.map((book) => (
+              {filteredBooks.map((book) => {
+                const local = 'source' in book ? book : undefined
+                return (
                 <article className="book-card" key={book.id}>
                   <button
                     className="book-open-button"
@@ -410,17 +492,17 @@ function App() {
                   >
                   <span className="book-cover">
                     <span className="file-type">EPUB</span>
-                    <BookCover title={book.title} cover={book.cover} />
+                    <BookCover title={book.title} cover={local?.cover} />
                   </span>
                   <span className="card-title">{book.title}</span>
-                  <span className={`source-badge ${book.source}`}>
-                    {book.source === 'linked' ? 'Linked folder' : 'Imported'}
+                  <span className={`source-badge ${local?.source ?? 'synced'}`}>
+                    {local?.source === 'linked' ? 'Linked folder' : local ? 'Imported' : 'Download to read'}
                   </span>
                   <span className="card-date">
-                    {book.progress
-                      ? `Continue · Chapter ${book.progress.sectionIndex + 1} of ${book.progress.sectionTotal}`
-                      : book.source === 'linked'
-                        ? book.relativePath
+                    {local?.progress
+                      ? local.progress.sectionIndex < 0 ? 'Continue reading' : `Continue · Chapter ${local.progress.sectionIndex + 1} of ${local.progress.sectionTotal}`
+                      : local?.source === 'linked'
+                        ? local.relativePath
                         : `Added ${new Date(book.addedAt).toLocaleDateString()}`}
                   </span>
                   </button>
@@ -430,10 +512,11 @@ function App() {
                     disabled={managingBookId === book.id}
                     onClick={() => void handleRemoveBook(book)}
                   >
-                    {book.source === 'linked' ? 'Unlink folder' : 'Remove book'}
+                    {local?.source === 'linked' ? 'Unlink folder' : 'Remove book'}
                   </button>
                 </article>
-              ))}
+                )
+              })}
             </section>
           )}
         </main>

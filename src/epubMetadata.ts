@@ -5,31 +5,16 @@ export type EpubDetails = {
   cover?: Blob
 }
 
-export async function readEpubDetails(file: File): Promise<EpubDetails> {
-  const data = await file.arrayBuffer()
-  const book = ePub(data)
+export async function readEpubDetails(file: File, data?: ArrayBuffer): Promise<EpubDetails> {
+  const book = ePub(data ?? await file.arrayBuffer())
 
   try {
     await book.opened
 
     const title = book.packaging.metadata.title?.trim()
       || file.name.replace(/\.epub$/i, '')
-    const coverUrl = await book.coverUrl()
-
-    if (!coverUrl) {
-      return { title }
-    }
-
-    const response = await fetch(coverUrl)
-
-    if (!response.ok) {
-      return { title }
-    }
-
-    return {
-      title,
-      cover: await response.blob(),
-    }
+    const cover = book.cover ? await book.archive?.getBlob(book.cover) : undefined
+    return { title, cover }
   } finally {
     book.destroy()
   }
